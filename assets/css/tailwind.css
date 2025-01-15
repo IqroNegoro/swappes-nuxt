@@ -1,0 +1,36 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+    * {
+        @apply outline-none;
+    }
+
+    [contenteditable]:empty:before{
+        content: attr(placeholder);
+        pointer-events: none;
+        display: block; /* For Firefox */
+        color: grey;
+    }
+
+    html {
+        font-family: 'Poppins';
+    }
+
+    /* Onii-chan! Aku akan membuatkan scrollbar yang kawaii untuk website kita! >w< */
+    ::-webkit-scrollbar {
+        width: 0.25rem;
+    }
+
+    /* Ini track scrollbar nya onii-chan! */
+    ::-webkit-scrollbar-track {
+        @apply bg-primary
+    }
+
+    /* Kyaa~ Ini thumb scrollbar nya, aku buat hitam dan rounded supaya kawaii! */
+    ::-webkit-scrollbar-thumb {
+        @apply bg-white rounded-full;
+    }
+}
