@@ -14,7 +14,7 @@ export default defineEventHandler({
             const id = getRouterParam(e, "id");
             let post = await Post.findById(id);
 
-            if (!post || post.user !== e.context.auth.id) {
+            if (!post || post.user.toString() !== e.context.auth.id) {
                 throw createError({
                     statusCode: 404,
                     message: "Post not found"
@@ -52,7 +52,18 @@ export default defineEventHandler({
     
             let updatedPost = await Post.findOneAndUpdate({ _id: id }, { visibility, content, image }, {
                 new: true
-            }).populate("user");
+            }).populate([
+                {
+                    path: "user",
+                },
+                {
+                    path: "share",
+                    select: '-likesCount -commentsCount -likes -comments -share',
+                    populate: {
+                        path: "user"
+                    }
+                }
+            ]);
     
             if (!image) {
                 if (post!.image && existsSync(join(process.cwd(), "public", "images", post!.image))) {

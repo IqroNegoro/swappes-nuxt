@@ -18,6 +18,11 @@ const userSchema = new Schema<IUser>({
     type: String,
     required: true
   },
+  banner: {
+    type: String,
+    default: null,
+    required: false
+  },
   avatar: {
     type: String,
     default: null,
@@ -38,6 +43,7 @@ userSchema.methods.toJSON = function() {
     name: this.name,
     username: this.username,
     avatar: this.login_type === 'google' ? this.avatar : this.avatar && `/images/${this.avatar}`,
+    banner: this.banner && `/images/${this.banner}`
   }
 }
 

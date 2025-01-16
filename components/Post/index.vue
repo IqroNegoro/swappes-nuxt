@@ -2,14 +2,18 @@
     <div class="flex flex-col gap-2 bg-primary py-2 rounded-sm">
         <div class="flex justify-between px-4 py-2">
             <div class="flex gap-2">
-                <Avatar>
-                    <AvatarImage v-if="post.user.avatar" :src="post.user.avatar" alt="Irene Arknight" class="w-16 h-16 rounded-full" />
-                    <AvatarFallback>
-                        <Skeleton class="rounded-full" />
-                    </AvatarFallback>
-                </Avatar>
+                <NuxtLink :to="{name: 'users-id', params: {id: post.user?.username}}">
+                    <Avatar>
+                        <AvatarImage v-if="post.user.avatar" :src="post.user.avatar" alt="Irene Arknight" class="w-16 h-16 rounded-full" />
+                        <AvatarFallback>
+                            <Skeleton class="rounded-full" />
+                        </AvatarFallback>
+                    </Avatar>
+                </NuxtLink>
                 <div class="flex flex-col">
+                  <NuxtLink :to="{name: 'users-id', params: {id: post.user?.username}}" class="hover:underline">
                     <p>{{ post.user.name }}</p>
+                  </NuxtLink>
                     <div class="flex gap-1 items-center">
                         <i class="bx text-xs" :class="{'bx-world': post.visibility === Visibility.PUBLIC, 'bx-group': post.visibility === Visibility.FRIENDS, 'bx-lock': post.visibility === Visibility.PRIVATE}"></i>
                         &bull;
@@ -78,7 +82,7 @@
           </p>
         </div>
         <img v-else-if="post.image" :src="post.image" alt="Image Post" class="w-full h-auto object-contain cursor-pointer" @click.self="emit('selectPost', post)">
-        <div v-if="!isShare && post.isShare" class="flex gap-2 px-2">
+        <div v-if="!isShare" class="flex gap-2 px-2">
             <Button @click="handleLikePost">
                 <i class="bx bx-heart"></i>
                 <p>{{ post.likesCount }}</p>

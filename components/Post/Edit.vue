@@ -58,7 +58,32 @@
                     </div>
                     <div contenteditable class="w-full min-h-24 px-4 py-1 inline-block" placeholder="What do you think right now?"  @keyup.ctrl.enter="handleSubmitForm" @input="e => content = (e.target as HTMLDivElement).innerText">{{ post.content }}</div>
                     <input type="file" id="image" name="image" accept="image/*" hidden @change="handleImageUpload" />
-                    <div class="w-full h-96">
+                    <div v-if="post.isShare && post.share" class="flex flex-col gap-2 bg-primary rounded-sm" :class="{'py-2': post.isShare && !post.share?.image}">
+                      <div class="flex justify-between px-4 py-2">
+                          <div class="flex gap-2">
+                              <Avatar>
+                                  <AvatarImage v-if="post.share.user.avatar" :src="post.share.user.avatar" alt="Irene Arknight" class="w-16 h-16 rounded-full" />
+                                  <AvatarFallback>
+                                      <Skeleton class="rounded-full" />
+                                  </AvatarFallback>
+                              </Avatar>
+                              <div class="flex flex-col">
+                                  <p>{{ post.share.user.name }}</p>
+                                  <div class="flex gap-1 items-center">
+                                      <i class="bx text-xs" :class="{'bx-world': post.share.visibility === Visibility.PUBLIC, 'bx-group': post.share.visibility === Visibility.FRIENDS, 'bx-lock': post.share.visibility === Visibility.PRIVATE}"></i>
+                                      &bull;
+                                      <i class="bx bx-time-five text-xs"></i>
+                                      <p class="text-xs">{{ moment(post.createdAt).fromNow() }}</p>
+                                  </div>
+                              </div>
+                          </div>
+                      </div>
+                      <div class="px-4">
+                          <p class="text-justify text-sm">{{ post.content }}</p>
+                      </div>
+                      <img v-if="post.share.image" :src="post.share.image" alt="Image Post" class="w-full h-auto object-contain cursor-pointer">
+                  </div>
+                    <div class="w-full h-96" v-else>
                       <div v-if="previewImage" class="relative">
                           <img :src="previewImage!" class="w-full h-full object-cover" />
                           <button @click="image = null" class="absolute top-0 right-0 text-white p-2 rounded-full flex justify-center items-center" type="button">
@@ -83,6 +108,7 @@
 <script setup lang="ts">
 import { object, string, mixed } from "yup";
 import { useToast } from '@/components/ui/toast/use-toast'
+import moment from "moment";
 
 const emit = defineEmits<{
     (e: 'close'): void

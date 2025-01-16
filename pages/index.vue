@@ -1,6 +1,6 @@
 <template>
-    <div class="w-full flex justify-center py-2">
-        <div class="w-1/2 flex flex-col gap-2">
+    <div class="w-full md:w-3/4 lg:w-1/2 mx-auto flex justify-center py-2">
+        <div class="w-full flex flex-col gap-2">
             <div class="flex gap-2 w-full bg-primary p-4">
                 <Avatar>
                     <AvatarImage v-if="user.avatar" :src="user.avatar" alt="Irene Arknight" class="w-16 h-16 rounded-full" />

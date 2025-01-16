@@ -1,30 +1,54 @@
 <template>
-    <div class="w-3/4 mx-auto">
-        <div class="w-full max-h-96 relative aspect-video rounded-b-lg overflow-hidden" @click="">
-            <div class="absolute top-0 left-0 w-full h-full bg-gradient-to-b from-transparent to-black/50 z-10"></div>
-            <img src="https://images3.alphacoders.com/127/1273121.jpg" alt="" class="w-full h-full object-cover aspect-video">
+    <div class="md:w-3/4 w-full mx-auto">
+        <div class="w-full max-h-96 relative aspect-video rounded-b-lg overflow-hidden">
+            <input type="file" id="banner" name="banner" accept="image/*" hidden @change="handleBannerUpload" />
+            <div class="absolute top-0 left-0 w-full h-full bg-gradient-to-b from-transparent to-black/50 z-10 flex justify-end items-end pointer-events-none">
+                <Button v-if="previewBanner && banner" class="cursor-pointer pointer-events-auto m-2" @click="handleUploadBanner">
+                    Update Banner
+                </Button>
+                <Button v-if="previewBanner && banner" class="cursor-pointer pointer-events-auto m-2" @click="banner = null">
+                    Cancel
+                </Button>
+            </div>
+            <label for="banner" @click="user?.user.id != userStore.id || banner ? $event.preventDefault() : null" :class="{'pointer-events-none': user?.user.id != userStore.id || banner}">
+                <img v-if="previewBanner && banner" :src="previewBanner" alt="User Banner" class="w-full h-full object-cover aspect-video">
+                <img v-else :src="user?.user.banner" :alt="`${user?.user.name} Banner`" class="w-full h-full object-cover aspect-video">
+            </label>
         </div>
-        <div class="w-full flex px-8 -translate-y-16 relative z-20">
-            <div class="flex flex-col gap-4">
-                <Avatar class="w-32 h-32">
-                    <AvatarImage v-if="user?.user?.avatar" :src="user.user.avatar" alt="Profile Picture" class="rounded-full" />
-                    <AvatarFallback>
-                        <Skeleton class="rounded-full" />
-                    </AvatarFallback>
-                </Avatar>
+        <div class="w-full flex px-8 -translate-y-16 relative z-20 pointer-events-none">
+            <div class="flex flex-col gap-4 pointer-events-auto relative">
+                <input type="file" id="avatar" name="avatar" accept="image/*" hidden @change="handleAvatarUpload" />
+                <label for="avatar" class="cursor-pointer pointer-events-auto" @click="user?.user.id != userStore.id || avatar ? $event.preventDefault() : null" :class="{'pointer-events-none': user?.user.id != userStore.id || avatar}">
+                    <Avatar class="w-32 h-32">
+                        <AvatarImage v-if="previewAvatar && avatar" :src="previewAvatar" alt="Profile Picture" class="rounded-full" />
+                        <AvatarImage v-else-if="user?.user?.avatar" :src="user.user.avatar" alt="Profile Picture" class="rounded-full" />
+                        <AvatarFallback>
+                            <Skeleton class="rounded-full" />
+                        </AvatarFallback>
+                    </Avatar>
+                </label>
                 <div>
                     <p class="text-white text-2xl font-bold">{{ user?.user?.name }}</p>
                     <p class="text-gray-300 font-light">@{{ user?.user?.username }}</p>
                     <p class="">{{ user?.user?.bio ?? 'This user has no bio yet' }}</p>
+                </div>
+                <div class="bg-primary p-1 flex flex-col w-max rounded-sm absolute top-2 left-full" v-if="user?.user?.id == userStore.id && previewAvatar && avatar">
+                    <div class="w-2 h-2 rotate-45 absolute -left-1 top-2 bg-primary"></div>
+                    <Button class="cursor-pointer pointer-events-auto m-2" @click="handleUploadAvatar">
+                        Update Avatar
+                    </Button>
+                    <Button class="cursor-pointer pointer-events-auto m-2 text-left" @click="avatar = null">
+                        Cancel
+                    </Button>
                 </div>
             </div>
             <div class="flex flex-col gap-4">
                 <Button></Button>
             </div>
         </div>
-        <div class="w-3/4 mx-auto flex flex-col gap-4 px-8">
+        <div class="lg:w-3/4 w-full mx-auto flex flex-col gap-4">
             <p class="text-white text-2xl font-bold">Posts</p>
-            <div class="w-full flex flex-col gap-4" v-if="user.user.id == userStore.id">
+            <div class="w-full flex flex-col gap-4" v-if="user?.user?.id == userStore.id">
                 <div class="flex gap-2 w-full bg-primary p-4">
                     <Avatar>
                         <AvatarImage v-if="userStore.avatar" :src="userStore.avatar" alt="Irene Arknight" class="w-16 h-16 rounded-full" />
@@ -48,6 +72,7 @@
     </div>
 </template>
 <script setup lang="ts">
+import { useToast } from '@/components/ui/toast/use-toast';
 const { id } = useRoute().params as { id: string };
 
 const userStore = useUserStore();
@@ -58,10 +83,18 @@ useHead({
     title: () => `${user.value?.user.name} in Swappes`
 })
 
+const { toast } = useToast();
+
 const selectedPost = ref<IPost | null>(null);
 const createPostStatus = ref<boolean>(false);
 const editPost = ref<IPost | null>(null);
 const sharePost = ref<IPost | null>(null);
+
+const banner = ref<File | null>(null);
+const previewBanner = ref<string | null>(null);
+
+const avatar = ref<File | null>(null);
+const previewAvatar = ref<string | null>(null);
 
 const handlePostCreated = (post: IPost) => {
     user.value!.posts.unshift(post);
@@ -108,4 +141,115 @@ const handleDeleteComment = (data: Pick<IPost, "id" | "commentsCount">) => {
         user.value!.posts[index].commentsCount = data.commentsCount;
     }
 }
+
+const handleUploadAvatar = async () => {
+    try {
+        const formData = new FormData();
+        formData.append("image", avatar.value as File);
+        const response = await $fetch<{data: Pick<IUser, "avatar">}>(`/api/users/${userStore.id}/avatar`, {
+            method: "POST",
+            body: formData
+        });
+
+        user.value!.user.avatar = response.data.avatar;
+        avatar.value = null;
+
+        toast({
+            title: "Success!",
+            description: "Your avatar has been updated successfully.",
+        })
+    } catch (error : any) {
+        toast({
+            title: "Error!",
+            description: "We cannot update your avatar right now, please try again later. Error : " + error.message,
+        })
+    }
+}
+
+const handleAvatarUpload = (event: Event) => {
+  const input = event.target as HTMLInputElement;
+  const file = input.files?.[0];
+
+  const allowedExtensions = ['jpg', 'jpeg', 'png', 'gif'];
+  const fileExtension = file?.name.split('.').pop()?.toLowerCase();
+
+  if (!fileExtension || !allowedExtensions.includes(fileExtension)) {
+    return;
+  }
+
+  if (file) {
+    avatar.value = file;
+    input.value = "";
+   }
+}
+
+const avatarListener = watch(avatar, (val, oldVal) => {
+  if (previewAvatar.value) {
+    URL.revokeObjectURL(previewAvatar.value);
+    previewAvatar.value = null;
+  }
+  if (val) {
+    previewAvatar.value = URL.createObjectURL(val as File);
+  }
+});
+
+const handleUploadBanner = async () => {
+    try {
+        const formData = new FormData();
+        formData.append("image", banner.value as File);
+        const response = await $fetch<{data: Pick<IUser, "banner">}>(`/api/users/${userStore.id}/banner`, {
+            method: "POST",
+            body: formData
+        });
+
+        user.value!.user.banner = response.data.banner;
+        banner.value = null;
+
+        toast({
+            title: "Success!",
+            description: "Your banner has been updated successfully.",
+        })
+    } catch (error : any) {
+        toast({
+            title: "Error!",
+            description: "We cannot update your banner right now, please try again later. Error : " + error.message,
+        })
+    }
+}
+
+const handleBannerUpload = (event: Event) => {
+  const input = event.target as HTMLInputElement;
+  const file = input.files?.[0];
+
+  const allowedExtensions = ['jpg', 'jpeg', 'png', 'gif'];
+  const fileExtension = file?.name.split('.').pop()?.toLowerCase();
+
+  if (!fileExtension || !allowedExtensions.includes(fileExtension)) {
+    return;
+  }
+
+  if (file) {
+    banner.value = file;
+    input.value = "";
+   }
+}
+
+const bannerListener = watch(banner, (val, oldVal) => {
+  if (previewBanner.value) {
+    URL.revokeObjectURL(previewBanner.value);
+    previewBanner.value = null;
+  }
+  if (val) {
+    previewBanner.value = URL.createObjectURL(val as File);
+  }
+});
+
+onBeforeUnmount(() => {
+  if (previewBanner.value) {
+    URL.revokeObjectURL(previewBanner.value);
+  }
+
+  bannerListener();
+  avatarListener();
+});
 </script>

@@ -16,13 +16,13 @@ export default defineEventHandler({
 
             const posts = await Post.find({ user: user.id }).populate([{
                 path: "user",
-                select: "-email -password -username",
+                select: "-email -password",
             }, {
                 path: "share",
                 select: '-likesCount -commentsCount -sharesCount -likes -comments -share',
                 populate: {
                     path: "user",
-                    select: "-email -password -username"
+                    select: "-email -password"
                 }
             }]).sort({createdAt: -1});
 
