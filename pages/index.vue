@@ -26,7 +26,7 @@
         </div>
         <div></div>
         <PostCreate v-if="createPostStatus" @close="createPostStatus = false" @create-post="handlePostCreated" />
-        <PostSelected v-if="selectedPost" @close="selectedPost = null" :post="selectedPost" @edit-post="post => editPost = post" @delete-post="handleDeletePost" @like-post="handleLikePost" @delete-comment="handleDeleteComment" />
+        <PostSelected v-if="selectedPost" @close="selectedPost = null" :post="selectedPost" @edit-post="post => editPost = post" @delete-post="handleDeletePost" @like-post="handleLikePost" @delete-comment="handleDeleteComment" @post-comment="handlePostComment" />
         <PostEdit v-if="editPost" @close="editPost = null" :post="editPost" @update-post="handlePostUpdated" />
     </div>
 </template>
@@ -64,10 +64,17 @@ const handleLikePost = (data: Pick<IPost, "id" | "likesCount">) => {
     }
 }
 
-const handleDeleteComment = (data: Pick<IComment, "id" | "post">) => {
-    const index = posts.value.findIndex(v => v.id === data.post);
+const handlePostComment = (data: Pick<IPost, "id" | "commentsCount">) => {
+    const index = posts.value.findIndex(v => v.id == data.id);
     if (index !== -1) {
-        posts.value[index].commentsCount = posts.value[index].commentsCount - 1;
+        posts.value[index].commentsCount = data.commentsCount;
+    }
+}
+
+const handleDeleteComment = (data: Pick<IPost, "id" | "commentsCount">) => {
+    const index = posts.value.findIndex(v => v.id == data.id);
+    if (index !== -1) {
+        posts.value[index].commentsCount = data.commentsCount;
     }
 }
 </script>

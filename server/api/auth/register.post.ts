@@ -14,12 +14,12 @@ export default defineEventHandler(async e => {
             password: string().min(8).required().ensure().trim(),
         }).validate(payload, {abortEarly: false});
     
-        const exists = await User.exists({ email });
+        const exists = await User.exists({ $or: [{ email }, { username }] });
     
         if (exists) {
             throw createError({
                 statusCode: 409,
-                message: "Email already exists"
+                message: "Email or Username already exists"
             });
         }
     

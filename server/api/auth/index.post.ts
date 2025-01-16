@@ -7,12 +7,12 @@ export default defineEventHandler(async e => {
     try {
         const payload = await readBody(e);
     
-        const { email, password } = await object({
-            email: string().email().required().ensure().trim(),
-            password: string().min(8).required().ensure().trim(),
+        const { credential, password } = await object({
+            credential: string().required().ensure().trim(),
+            password: string().min(8).required().ensure().trim()
         }).validate(payload, {abortEarly: false});
 
-        const user = await User.findOne({ email });
+        const user = await User.findOne({ $or: [{ email: credential }, { username: credential }] });
     
         if (!user) {
             throw createError({
@@ -41,7 +41,7 @@ export default defineEventHandler(async e => {
     
         const accessToken = jwt.sign({
             id: user._id,
-            email: user.email,
+            username: user.username,
             name: user.name, 
             avatar: user.avatar,
         }, config.JWT_SECRET);

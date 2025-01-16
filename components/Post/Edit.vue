@@ -139,7 +139,6 @@ const handleImageUpload = (event: Event) => {
 }
 
 const handleSubmitForm = handleSubmit(async ({content, image, visibility}) => {
-  console.log(image, content)
     try {
         toast({
             title: "Updating...",

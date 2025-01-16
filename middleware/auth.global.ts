@@ -13,6 +13,8 @@ export default defineNuxtRouteMiddleware(async (to, from) => {
     if (error.value) {
         user.$reset();
         if (whitelists.includes(to.name as string)) return;
-        else return await navigateTo("/login");
+        else {
+            return await navigateTo("/login");
+        } 
     }
 });

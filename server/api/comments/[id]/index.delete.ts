@@ -1,15 +1,17 @@
 import Comment from "models/Comment";
 import { join } from "path";
 import { unlinkSync, existsSync } from "fs";
+import Post from "~/server/models/Post";
 
 export default defineEventHandler({
     onRequest: [auth],
     handler: async e => {
         try {
             const id = getRouterParam(e, "id");
+
             const comment = await Comment.findById(id);
-            
-            if (!comment || comment.user !== e.context.auth.id) {
+
+            if (!comment || comment.user.toString() !== e.context.auth.id) {
                 throw createError({
                     statusCode: 404,
                     message: "Comment not found"
@@ -21,10 +23,13 @@ export default defineEventHandler({
             }
     
             await comment.deleteOne();
+
+            const post = await Post.findById(comment.post).select("commentsCount");
     
             return {data: {
                 id: comment.id,
-                post: comment.post
+                post,
+                replyId: comment.replyId
             }};
         } catch (error: any) {
             throw createError({

@@ -1,4 +1,4 @@
-import Post from "models/Post";
+import Comment from "models/Comment";
 import { Types } from "mongoose";
 const { ObjectId } = Types;
 
@@ -7,18 +7,17 @@ export default defineEventHandler({
     handler: async e => {
         try {
             const id = getRouterParam(e, "id");
-            const exists = await Post.exists({
+            const exists = await Comment.exists({
                 _id: new ObjectId(id),
                 likes: {
                     $in: [new ObjectId(e.context.auth.id)]
                 }
             });
 
-
-            let post;
+            let comment;
 
             if (exists) {
-                post = await Post.findByIdAndUpdate(id, {
+                comment = await Comment.findByIdAndUpdate(id, {
                     $inc: {
                         likesCount: -1
                     },
@@ -29,7 +28,7 @@ export default defineEventHandler({
                     new: true
                 }).select("likesCount");
             } else {
-                post = await Post.findByIdAndUpdate(id, {
+                comment = await Comment.findByIdAndUpdate(id, {
                     $inc: {
                         likesCount: 1
                     },
@@ -42,7 +41,7 @@ export default defineEventHandler({
             }
 
             return {
-                data: post
+                data: comment
             }
         } catch (error : any) {
             throw createError({

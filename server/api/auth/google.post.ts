@@ -2,6 +2,7 @@ import { OAuth2Client } from "google-auth-library";
 import User from "models/User";
 import jwt from "jsonwebtoken";
 import Token from "models/Token";
+import slugify from "slugify";
 
 export default defineEventHandler(async (event) => {
     try {
@@ -27,6 +28,7 @@ export default defineEventHandler(async (event) => {
             user = await User.create({
                 email: userInfo.data.email,
                 name: userInfo.data.name,
+                username: slugify(userInfo.data.name, { lower: true, strict: true, trim: true, remove: /[^a-zA-Z0-9.]/gi, replacement: '' }) + Math.floor(Math.random() * 1000000),
                 login_type: 'google',
                 avatar: userInfo.data.picture
             });
@@ -34,7 +36,7 @@ export default defineEventHandler(async (event) => {
 
         const accessToken = jwt.sign({
             id: user._id,
-            email: user.email,
+            username: user.username,
             name: user.name, 
             avatar: user.avatar,
         }, config.JWT_SECRET);

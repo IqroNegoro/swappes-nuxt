@@ -35,7 +35,8 @@ const postSchema = new Schema<IPost>({
   },
   likes: [{
     type: Schema.Types.ObjectId,
-    ref: User
+    ref: User,
+    default: []
   }]
 }, {
     timestamps: true

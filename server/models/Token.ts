@@ -9,8 +9,7 @@ const tokenSchema = new mongoose.Schema<IToken>({
     },
     token: {
         type: String,
-        required: true,
-        unique: true
+        required: true
     }
 }, {
     timestamps: true

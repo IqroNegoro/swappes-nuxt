@@ -42,8 +42,14 @@ export default defineEventHandler({
 
             const comment = await Comment.create({ user: e.context.auth.id, content, image, replyId, post });
        
-            const data = await comment.populate("user");
-            
+            const data = await comment.populate([{
+                path: "user",
+                select: "avatar name login_type",
+            }, {
+                path: "post",
+                select: "id commentsCount"
+            }]);
+
             return {data};
         } catch (error) {
             console.log(error)

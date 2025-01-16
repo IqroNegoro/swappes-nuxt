@@ -36,6 +36,7 @@ userSchema.methods.toJSON = function() {
   return {
     id: this._id,
     name: this.name,
+    username: this.username,
     avatar: this.login_type === 'google' ? this.avatar : this.avatar && `/images/${this.avatar}`,
   }
 }

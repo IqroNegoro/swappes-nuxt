@@ -2,14 +2,13 @@
     <div class="bg-black/90 w-full min-h-dvh flex items-center justify-center">
         <div class="w-full max-w-md bg-primary p-8 rounded-lg">
             <h1 class="text-2xl font-bold text-center mb-8 text-white">Welcome Back To Swappes!</h1>
-
             <form @submit.prevent="handleSubmitForm" class="space-y-4">
                 <div>
-                    <label class="block text-sm font-medium text-white mb-1">Email</label>
-                    <input type="email" v-model="email"
+                    <label class="block text-sm font-medium text-white mb-1">Email or Username</label>
+                    <input type="text" v-model="credential"
                         class="w-full px-3 py-2 bg-black/10 border border-white/10 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-white/50 placeholder:font-light"
-                        :class="{ 'border-red-500': errors.email }" placeholder="Enter your email" required />
-                    <span v-if="errors.email" class="text-red-500 text-xs">{{ errors.email }}</span>
+                        :class="{ 'border-red-500': errors.credential }" placeholder="Enter your email or username" required />
+                    <span v-if="errors.credential" class="text-red-500 text-xs">{{ errors.credential }}</span>
                 </div>
 
                 <div>
@@ -21,6 +20,7 @@
                 </div>
 
                 <button type="submit"
+                :disabled="isSubmitting || isValidating || !credential || !password"
                     class="w-full bg-white text-primary font-semibold py-2 px-4 rounded-md hover:bg-white/90 transition duration-200">
                     <i v-if="isSubmitting || isValidating" class="bx bx-loader-alt bx-spin"></i>
                     <p v-else>Login</p>
@@ -68,12 +68,12 @@ const { toast } = useToast();
 const emit = defineEmits(['close']);
 
 const { defineField, errors, handleSubmit, isValidating, isSubmitting, setErrors } = useForm<{
-    email: string,
+    credential: string,
     password: string,
 }>({
     validationSchema: toTypedSchema(object({
-        email: string().email().required().ensure().trim(),
-        password: string().min(8).required().ensure().trim(),
+        credential: string().required().ensure().trim(),
+        password: string().min(8).required().ensure().trim()
     }))
 });
 
@@ -84,22 +84,22 @@ const validateRule = {
     validateOnModelUpdate: false
 }
 
-const [email, emailAttr] = defineField("email", validateRule);
+const [credential, credentialAttr] = defineField("credential", validateRule);
 const [password, passwordAttr] = defineField("password", validateRule);
 
-const handleSubmitForm = handleSubmit(async ({ email, password }) => {
+const handleSubmitForm = handleSubmit(async ({ credential, password }) => {
     try {
         const data = await $fetch<{ data: IUser }>("/api/auth", {
             method: "POST",
             body: {
-                email,
+                credential,
                 password
             }
         });
 
         user.$patch(data.data);
 
-        await navigateTo("/");
+        return await navigateTo("/");
     } catch (error: any) {
         if (error.statusCode === 400) {
             setErrors(error.data.data);
@@ -133,10 +133,17 @@ const handleOnSuccess = async (response: AuthCodeFlowSuccessResponse) => {
 };
 
 const handleOnError = (errorResponse: AuthCodeFlowErrorResponse) => {
-    toast({
-        title: "Error!",
-        description: errorResponse.error_description || "Internal Server Error",
-    })
+    if (errorResponse.error === 'access_denied') {
+        toast({
+            title: "Error!",
+            description: "You have denied the request to access your account",
+        })
+    } else {
+        toast({
+            title: "Error!",
+            description: errorResponse.error_description || "Internal Server Error",
+        })
+    }
 };
 
 const { isReady, login } = useTokenClient({

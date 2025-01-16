@@ -12,10 +12,11 @@
                 <div class="overflow-y-auto overflow-x-hidden overscroll-contain">
                     <Post :post="post" @edit-post="emit('editPost', $event)" @delete-post="emit('deletePost', $event)" @like-post="emit('likePost', $event)" />
                     <div class="p-2">
-                        <PostComment v-for="comment in comments" :key="comment.id" :comment="comment" @delete-comment="handleDeleteComment" />
+                        <PostComment v-for="comment in comments" :key="comment.id" :comment="comment" @delete-comment="handleDeleteComment" @like-comment="handleLikeComment" @reply-comment="comment => reply = comment" />
                     </div>
                 </div>
                 <form class="flex flex-col gap-2 w-full bg-primary p-4" @submit.prevent="handleSubmitForm">
+                  <p class="text-sm" v-if="reply">Reply to <span class="font-medium">{{ reply.user.name }}</span></p>
                     <div class="flex gap-4 w-full">
                         <Avatar>
                             <AvatarImage v-if="user.avatar" :src="user.avatar" alt="Irene Arknight" class="w-16 h-16 rounded-full" />
@@ -23,14 +24,15 @@
                                 <Skeleton class="rounded-full" />
                             </AvatarFallback>
                         </Avatar>
-                        <Input v-model="content" placeholder="What do you think right now?" class="bg-black/10" @keyup.ctrl.enter="handleSubmitForm" :class="{ 'border border-red-500': errors.image || errors.content }" />
+                        <div ref="inputArea" contenteditable @input="content = ($event.target as HTMLDivElement)!.innerText" placeholder="What do you think right now?" class="bg-black/10 w-full p-2 max-h-48 overflow-y-auto overflow-x-hidden" @keyup.ctrl.enter="handleSubmitForm" :class="{ 'border border-red-500': errors.image || errors.content }" />
                         <div class="flex gap-2">
                             <input type="file" id="image" name="image" hidden accept="image/*" @change="handleImageUpload" />
                             <label for="image" class="flex justify-center items-center cursor-pointer">
                                 <i class="bx bx-image text-2xl"></i>
                             </label>
                             <button :disabled="isValidating || isSubmitting || (!content && !image)" type="submit" class="cursor-pointer disabled:cursor-default">
-                                <i class="bx bx-send text-2xl"></i>
+                              <i class="bx bx-loader-alt bx-spin" v-if="isSubmitting || isValidating"></i>
+                              <i class="bx bx-send text-2xl" v-else></i>
                             </button>
                         </div>
                     </div>
@@ -49,8 +51,8 @@ const emit = defineEmits<{
     (e: 'editPost', post: IPost): void
     (e: 'deletePost', id: string): void
     (e: 'likePost', data: Pick<IPost, "id" | "likesCount">): void
-    (e: 'commentPost', data: IComment): void
-    (e: 'deleteComment', data: Pick<IComment, "id" | "post">): void
+    (e: 'postComment', data: Pick<IPost, "id" | "commentsCount">): void
+    (e: 'deleteComment', data: Pick<IPost, "id" | "commentsCount">): void
 }>();
 
 const props = defineProps<{
@@ -63,17 +65,18 @@ const { toast } = useToast();
 
 const { data : comments, status, error } = await getComments(props.post.id);
 
-const { errors, defineField, handleSubmit, isValidating, isSubmitting } = useForm<Pick<IComment, "content"> & { image: File | null }>({
+const inputArea = ref<HTMLDivElement | null>(null);
+
+const { errors, defineField, handleSubmit, isValidating, isSubmitting, resetForm } = useForm<Pick<IComment, "content"> & { image: File | null }>({
   validationSchema: toTypedSchema(object().shape({
-    content: string().ensure().trim().when("image", ([val], schema) => val ? schema.notRequired() : schema.required()),
+    content: string().max(100).ensure().trim().when("image", ([val], schema) => val ? schema.notRequired() : schema.required()),
     image: mixed().when("content", ([val], schema) => val ? schema.notRequired() : schema.required()),
   }, [["content", "image"]])),
+  initialValues: {
+    content: "",
+    image: null
+  }
 });
-
-const handleDeleteComment = (data: Pick<IComment, "id" | "post">) => {
-    comments.value = comments.value.filter(comment => comment.id !== data.id);
-    emit("deleteComment", data);
-}
 
 const validateRule = {
   validateOnBlur: false,
@@ -86,7 +89,7 @@ const [content, contentAttr] = defineField("content", validateRule);
 const [image, imageAttr] = defineField("image", validateRule);
 
 const previewImage = ref<string | null>(null);
-const replyId = ref<IComment | null>(null);
+const reply = ref<IComment | null>(null);
 
 const handleImageUpload = (event: Event) => {
   const input = event.target as HTMLInputElement;
@@ -105,6 +108,25 @@ const handleImageUpload = (event: Event) => {
   }
 }
 
+const handleLikeComment = (data: Pick<IComment, "id" | "likesCount">) => {
+  const index = comments.value.findIndex(comment => comment.id === data.id);
+  if (index !== -1) {
+    comments.value[index].likesCount = data.likesCount;
+  }
+}
+
+const handleDeleteComment = (data: Pick<IComment, "id" | "post" | "replyId">) => {
+  if (data.replyId) {
+    const index = comments.value.findIndex(comment => comment.id === data.replyId);
+    if (index !== -1) {
+        comments.value[index].replies = comments.value[index].replies?.filter(reply => reply.id !== data.id) ?? [];
+      }
+    } else {
+      comments.value = comments.value.filter(comment => comment.id !== data.id);
+    }
+    emit("deleteComment", data.post);
+}
+
 const handleSubmitForm = handleSubmit(async ({ content, image }) => {
   try {
     let formData = new FormData();
@@ -112,18 +134,32 @@ const handleSubmitForm = handleSubmit(async ({ content, image }) => {
     formData.append("post", props.post.id);
     if (content) formData.append("content", content);
     if (image) formData.append("image", image);
-    if (replyId.value) formData.append("replyId", replyId.value!.id)
+    if (reply.value) formData.append("replyId", reply.value!.replyId ? reply.value!.replyId : reply.value!.id)
 
     const response = await $fetch<{ data: IComment }>("/api/comments", {
       method: "POST",
       body: formData,
     });
 
-    emit("commentPost", response.data);
+    if (response.data.replyId) {
+      const index = comments.value.findIndex(comment => comment.id === response.data.replyId);
+      if (index !== -1) {
+        comments.value[index].replies?.unshift(response.data);
+      }
+    } else {
+      comments.value.unshift(response.data);
+    }
+
+    resetForm();
+    if (inputArea.value) {
+      inputArea.value.innerText = "";
+    }
+
+    emit("postComment", response.data.post);
   } catch (error) {
     toast({
       title: "Error!",
-      description: "Oops, we cannot create your post right now, try again.",
+      description: "Oops, we cannot create your comment right now, try again.",
     });
   }
 });

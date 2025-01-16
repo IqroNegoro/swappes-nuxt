@@ -5,7 +5,9 @@ export interface IComment {
     content: string
     image: string
     likesCount: number
+    likes: IUser[]
     replyId: IComment
+    replies?: IComment[]
     createdAt: Date
     updatedAt: Date
 }

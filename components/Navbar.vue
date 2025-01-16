@@ -22,9 +22,10 @@
                   <DropdownMenuLabel class="font-bold">Profile Menu</DropdownMenuLabel>
                   <DropdownMenuGroup>
                     <DropdownMenuItem>
-                    <NuxtLink :to="{name: 'users-id', params: {id: user.id}}" :prefetch="true">
+                    <NuxtLink v-if="user.username" :to="{name: 'users-id', params: {id: user.username}}">
                         <span>My Profile</span>
                     </NuxtLink>
+                    <span v-else>My Profile</span>
                       <DropdownMenuShortcut>
                         <i class="bx bx-user text-xl"></i>
                       </DropdownMenuShortcut>
@@ -34,8 +35,6 @@
                       <DropdownMenuShortcut>
                         <i class="bx bx-log-out text-xl"></i>
                       </DropdownMenuShortcut>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem>
                     </DropdownMenuItem>
                   </DropdownMenuGroup>
                 </DropdownMenuContent>
@@ -56,12 +55,11 @@ const handleLogout = async () => {
             method: 'DELETE'
         });
 
-        user.$reset();
-        await navigateTo({name: 'login'});
+        return await navigateTo("/login");
     } catch (error : any) {
         toast({
             title: "Error!",
-            description: "Cannot proceed to log out right now, try again, Error :" + error.data.message
+            description: "Cannot proceed to log out right now, try again, Error : " + error.data.message
         })
     }
 }
