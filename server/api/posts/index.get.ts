@@ -13,6 +13,7 @@ export default defineEventHandler(async (e) => {
                 select: "-email -password"
             }
         }]).sort({createdAt: -1});
+        console.log(posts[0].share)
         return {data: posts};
     } catch (error : any) {
         throw createError({

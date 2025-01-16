@@ -42,7 +42,7 @@ userSchema.methods.toJSON = function() {
     id: this._id,
     name: this.name,
     username: this.username,
-    avatar: this.login_type === 'google' ? this.avatar : this.avatar && `/images/${this.avatar}`,
+    avatar: this.login_type === 'google' && this.avatar.startsWith('http') ? this.avatar : this.avatar && `/images/${this.avatar}`,
     banner: this.banner && `/images/${this.banner}`
   }
 }

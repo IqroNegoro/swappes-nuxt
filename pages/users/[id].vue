@@ -152,6 +152,9 @@ const handleUploadAvatar = async () => {
         });
 
         user.value!.user.avatar = response.data.avatar;
+        userStore.$patch({
+            avatar: response.data.avatar
+        });
         avatar.value = null;
 
         toast({

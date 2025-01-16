@@ -38,7 +38,7 @@ export default defineEventHandler(async (event) => {
             id: user._id,
             username: user.username,
             name: user.name, 
-            avatar: user.avatar,
+            avatar: user.login_type === 'google' && user.avatar.startsWith('http') ? user.avatar : user.avatar && `/images/${user.avatar}`,
         }, config.JWT_SECRET);
 
         const refreshToken = jwt.sign({
