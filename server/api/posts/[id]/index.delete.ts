@@ -9,7 +9,7 @@ export default defineEventHandler({
             const id = getRouterParam(e, "id");
             const post = await Post.findById(id);
             
-            if (!post || post.user !== e.context.auth.id) {
+            if (!post || post.user.toString() !== e.context.auth.id) {
                 throw createError({
                     statusCode: 404,
                     message: "Post not found"

@@ -31,6 +31,11 @@
     </div>
 </template>
 <script setup lang="ts">
+
+useHead({
+    title: "Swappes"
+});
+
 const user = useUserStore();
 
 const { data: posts, status, error, refresh } = await getPosts();

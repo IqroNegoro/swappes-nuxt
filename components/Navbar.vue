@@ -2,7 +2,7 @@
     <div class="w-full h-16 p-4 flex items-center justify-between bg-primary">
         <h1 class="text-white font-medium text-2xl">Swappes</h1>
         <div>
-            <NuxtLink class="">
+            <NuxtLink class="" :to="{name: 'index'}">
                 <Button variant="link">
                     <i class="bx bx-home-alt text-white text-3xl"></i>
                 </Button>
