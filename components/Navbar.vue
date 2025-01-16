@@ -21,11 +21,8 @@
                 <DropdownMenuContent class="w-56 bg-primary text-white border-0 mr-5">
                   <DropdownMenuLabel class="font-bold">Profile Menu</DropdownMenuLabel>
                   <DropdownMenuGroup>
-                    <DropdownMenuItem>
-                    <NuxtLink v-if="user.username" :to="{name: 'users-id', params: {id: user.username}}">
-                        <span>My Profile</span>
-                    </NuxtLink>
-                    <span v-else>My Profile</span>
+                    <DropdownMenuItem @click="() => navigateTo(`/users/${user.username}`)">
+                    <span>My Profile</span>
                       <DropdownMenuShortcut>
                         <i class="bx bx-user text-xl"></i>
                       </DropdownMenuShortcut>

@@ -4,7 +4,7 @@ import { readFiles } from "h3-formidable";
 import { firstValues } from "h3-formidable/helpers"
 import slugify from "slugify";
 import { unlink } from "fs/promises";
-import { object, string, ValidationError, mixed } from "yup";
+import { object, string, ValidationError, mixed, boolean } from "yup";
 
 export default defineEventHandler({
     onRequest: [auth],
@@ -33,15 +33,38 @@ export default defineEventHandler({
             image = firstValues(form, files, []).image?.newFilename
             const body = firstValues(form, fields, []);
             body.image = image;
-            const { content, visibility } = await object<Pick<IPost, "content" | "visibility">>().shape({
-                content: string().ensure().trim().when("image", ([val], schema) => val ? schema.notRequired() : schema.required()),
+            const { content, visibility, isShare, share } = await object<Pick<IPost, "content" | "visibility">>().shape({
+                content: string().max(5000).ensure().trim().when("image", ([val], schema) => val ? schema.notRequired() : schema.required()),
                 image: mixed().when("content", ([val], schema) => val ? schema.notRequired() : schema.required()),
+                isShare: boolean().nullable().default(false),
+                share: string().nullable().when("isShare", ([val], schema) => !val ? schema.notRequired() : schema.required()),
                 visibility: string().oneOf(Object.values(Visibility)).required().default(Visibility.PUBLIC)
-            }, [["content", "image"]]).validate(body, {abortEarly: false});
+            }, [["content", "image"], ["isShare", "share"]]).validate(body, {abortEarly: false});
+
+            if (isShare) {
+                const post = await Post.findById(share);
+                if (!post) {
+                    throw createError({
+                        statusCode: 404,
+                        message: "Post not found"
+                    });
+                }
+            }
             
-            const post = await Post.create({ user: e.context.auth.id, visibility, content, image });
+            const post = await Post.create({ user: e.context.auth.id, visibility, content, image, share, isShare });
        
-            const data = await post.populate("user");
+            const data = await post.populate([
+                {
+                    path: "user",
+                },
+                {
+                    path: "share",
+                    select: '-likesCount -commentsCount -likes -comments -share',
+                    populate: {
+                        path: "user"
+                    }
+                }
+            ]);
             
             return {data};
         } catch (error) {

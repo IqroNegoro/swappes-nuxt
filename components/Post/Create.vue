@@ -1,5 +1,5 @@
 <template>
-  <div class="fixed top-0 left-0 w-full h-full bg-black/50 z-10 flex justify-center items-center overscroll-contain">
+  <div class="fixed top-0 left-0 w-full h-full bg-black/50 z-30 flex justify-center items-center overscroll-contain">
     <Transition name="fade-up" appear mode="in-out">
       <form @submit.prevent="handleSubmitForm"
         class="bg-primary text-white relative md:rounded-md w-full md:w-3/4 lg:w-1/2 h-full md:max-h-[85%] overflow-hidden flex flex-col"
@@ -190,7 +190,7 @@ onBeforeUnmount(() => {
 
 onMounted(() => {
   window.addEventListener("keydown", handleClose)
-})
+});
 </script>
 <style scoped>
 .fade-up-enter-active,

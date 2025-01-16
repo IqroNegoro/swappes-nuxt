@@ -43,7 +43,7 @@ const { toast } = useToast();
 const user = useUserStore();
 
 const emit = defineEmits<{
-    (e: 'deleteComment', data: Pick<IComment, "id" | "post">): void
+    (e: 'deleteComment', data: Pick<IComment, "id" | "post" | "replyId">): void
     (e: 'likeComment', data: Pick<IComment, "id" | "likesCount">): void
     (e: 'replyComment', data: IComment): void
 }>();
@@ -65,7 +65,7 @@ const handleLikeComment = async () => {
 
 const handleDeleteComment = async () => {
     try {
-        const { data } = await $fetch<{data: Pick<IComment, "id" | "post">}>(`/api/comments/${props.comment.id}`, {
+        const { data } = await $fetch<{data: Pick<IComment, "id" | "post" | "replyId">}>(`/api/comments/${props.comment.id}`, {
             method: "DELETE"
         });
 

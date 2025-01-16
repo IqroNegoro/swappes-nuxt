@@ -1,16 +1,16 @@
 <template>
-    <div class="fixed top-0 left-0 w-full h-full bg-black/50 z-10 flex justify-center items-center" @click.self="emit('close')">
+    <div class="fixed top-0 left-0 w-full h-full bg-black/50 z-30 flex justify-center items-center" @click.self="emit('close')">
         <Transition name="fade-up" appear mode="in-out">
-            <div ref="container" class="bg-primary text-white relative md:rounded-md w-full md:w-3/4 lg:w-1/2 h-full md:max-h-[85%] overflow-hidden flex flex-col" @click.stop>
+            <div ref="container" class="bg-primary text-white relative md:rounded-md w-full md:w-3/4 lg:w-1/2 h-full md:max-h-[85%] md:h-max overflow-hidden flex flex-col" @click.stop>
                 <div class="flex justify-between items-center relative text-center p-2">
                     <div></div>
-                    <p class="text-2xl">Irene Post</p>
+                    <p class="text-2xl"> {{ post.user.name }} Post </p>
                     <button @click="emit('close')">
                         <i class="bx bx-x text-2xl"></i>
                     </button>
                 </div>
                 <div class="overflow-y-auto overflow-x-hidden overscroll-contain">
-                    <Post :post="post" @edit-post="emit('editPost', $event)" @delete-post="emit('deletePost', $event)" @like-post="emit('likePost', $event)" />
+                    <Post :post="post" @edit-post="emit('editPost', $event)" @delete-post="emit('deletePost', $event)" @like-post="emit('likePost', $event)" @share-post="emit('sharePost', $event)" />
                     <div class="p-2">
                         <PostComment v-for="comment in comments" :key="comment.id" :comment="comment" @delete-comment="handleDeleteComment" @like-comment="handleLikeComment" @reply-comment="comment => reply = comment" />
                     </div>
@@ -50,6 +50,7 @@ const emit = defineEmits<{
     (e: 'close'): void
     (e: 'editPost', post: IPost): void
     (e: 'deletePost', id: string): void
+    (e: 'sharePost', post: IPost): void
     (e: 'likePost', data: Pick<IPost, "id" | "likesCount">): void
     (e: 'postComment', data: Pick<IPost, "id" | "commentsCount">): void
     (e: 'deleteComment', data: Pick<IPost, "id" | "commentsCount">): void

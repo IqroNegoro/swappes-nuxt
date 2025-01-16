@@ -1,6 +1,17 @@
 <template>
-  <NuxtLayout class="bg-black/90 w-full min-h-dvh flex flex gap-1 text-white">
+  <NuxtLayout class="bg-black/90 w-full min-h-dvh flex flex-col gap-1 text-white">
     <NuxtPage />
     <Toaster />
   </NuxtLayout>
 </template>
+<style>
+.page-enter-active,
+.page-leave-active {
+  transition: all 0.4s;
+}
+.page-enter-from,
+.page-leave-to {
+  opacity: 0;
+  filter: blur(0.25rem);
+}
+</style>

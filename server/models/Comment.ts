@@ -61,7 +61,7 @@ commentSchema.methods.toJSON = function() {
   }
 }
 
-commentSchema.pre('save', async function(doc: IComment) {
+commentSchema.pre('save',  async function(doc: IComment) {
   const post = await Post.findById(this.post);
   if (!post) {
     throw new Error("Post not found");

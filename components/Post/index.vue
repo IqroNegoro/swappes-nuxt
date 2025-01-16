@@ -18,7 +18,7 @@
                     </div>
                 </div>
             </div>
-            <DropdownMenu>
+            <DropdownMenu v-if="!isShare">
                 <DropdownMenuTrigger as-child>
                   <Button class="w-max p-0 h-auto hover:bg-transparent">
                     <i class="bx bx-dots-horizontal text-xl"></i>
@@ -68,8 +68,17 @@
         <div class="px-4">
             <p class="text-justify text-sm">{{ post.content }}</p>
         </div>
-        <img v-if="post.image" :src="post.image" alt="Image Post" class="w-full h-auto object-contain cursor-pointer" @click.self="emit('selectPost', post)">
-        <div class="flex gap-2 px-2">
+        <div v-if="post.isShare && post.share" class="px-4">
+          <Post :post="post.share!" :isShare="post.isShare" />
+        </div>
+        <div v-else-if="!isShare && post.isShare && !post.share" class="text-center my-4">
+          <i class="bx bx-ghost"></i>
+          <p>
+            This share post has been ghosted
+          </p>
+        </div>
+        <img v-else-if="post.image" :src="post.image" alt="Image Post" class="w-full h-auto object-contain cursor-pointer" @click.self="emit('selectPost', post)">
+        <div v-if="!isShare && post.isShare" class="flex gap-2 px-2">
             <Button @click="handleLikePost">
                 <i class="bx bx-heart"></i>
                 <p>{{ post.likesCount }}</p>
@@ -78,7 +87,7 @@
                 <i class="bx bx-comment"></i>
                 <p>{{ post.commentsCount }}</p>
             </Button>
-            <Button>
+            <Button @click="emit('sharePost', post.isShare ? post.share ? post.share : post : post)">
                 <i class="bx bx-share-alt"></i>
                 <p>{{ post.sharesCount }}</p>
             </Button>
@@ -94,7 +103,8 @@ const { toast } = useToast()
 const user = useUserStore();
 
 const props = defineProps<{
-    post: IPost
+    post: IPost,
+    isShare?: boolean | null
 }>();
 
 const emit = defineEmits<{
@@ -102,6 +112,7 @@ const emit = defineEmits<{
     (e: 'editPost', data: IPost): void
     (e: 'deletePost', data: string): void
     (e: 'likePost', data: Pick<IPost, "id" | "likesCount">): void
+    (e: 'sharePost', data: IPost): void
 }>();
 
 const handleLikePost = async () => {

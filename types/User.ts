@@ -4,6 +4,7 @@ export interface IUser {
     username: string
     password: string
     name: string
+    bio: string
     avatar: string
     login_type: 'google' | 'password'
 }

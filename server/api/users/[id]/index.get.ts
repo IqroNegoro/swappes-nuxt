@@ -14,7 +14,17 @@ export default defineEventHandler({
                 })
             }
 
-            const posts = await Post.find({ user: user.id }).populate('user').sort({createdAt: -1});
+            const posts = await Post.find({ user: user.id }).populate([{
+                path: "user",
+                select: "-email -password -username",
+            }, {
+                path: "share",
+                select: '-likesCount -commentsCount -sharesCount -likes -comments -share',
+                populate: {
+                    path: "user",
+                    select: "-email -password -username"
+                }
+            }]).sort({createdAt: -1});
 
             return {data: {
                 user,

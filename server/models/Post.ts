@@ -37,7 +37,15 @@ const postSchema = new Schema<IPost>({
     type: Schema.Types.ObjectId,
     ref: User,
     default: []
-  }]
+  }],
+  share: {
+    type: Schema.Types.ObjectId,
+    ref: "posts"
+  },
+  isShare: {
+    type: Boolean,
+    default: false
+  }
 }, {
     timestamps: true
 });
@@ -52,10 +60,22 @@ postSchema.methods.toJSON = function() {
     likesCount: this.likesCount,
     commentsCount: this.commentsCount,
     sharesCount: this.sharesCount,
+    share: this.share,
+    isShare: this.isShare,
     createdAt: this.createdAt,
     updatedAt: this.updatedAt
   }
 }
+
+postSchema.post("save", {document: true}, async function(doc: IPost) {
+  if (doc.isShare) {
+    const post = await Post.findById(doc.share);
+    if (!post) {
+      throw new Error("Post not found");
+    }
+    await post.updateOne({$inc: {sharesCount: 1}});
+  }
+});
 
 const Post = model('posts', postSchema);
 

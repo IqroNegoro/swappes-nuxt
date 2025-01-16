@@ -12,7 +12,7 @@
         <div class="px-4">
             <Skeleton class="w-full h-4 rounded-sm" />
         </div>
-        <Skeleton class="w-full h-full object-cover" />
+        <Skeleton class="w-full h-96 object-cover" />
         <div class="flex gap-2 px-2">
             <Button>
                 <Skeleton class="w-4 h-4 rounded-sm" />

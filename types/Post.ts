@@ -14,6 +14,8 @@ export interface IPost {
     commentsCount: number
     sharesCount: number
     likes: IUser["id"][]
+    isShare: boolean
+    share: IPost | null
     createdAt: string
     updatedAt: string
 }

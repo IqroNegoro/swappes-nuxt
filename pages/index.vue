@@ -1,7 +1,6 @@
 <template>
-    <div class="grid grid-cols-[1fr,2fr,1fr] grid-rows-1 gap-2">
-        <div></div>
-        <div class="flex flex-col gap-2">
+    <div class="w-full flex justify-center py-2">
+        <div class="w-1/2 flex flex-col gap-2">
             <div class="flex gap-2 w-full bg-primary p-4">
                 <Avatar>
                     <AvatarImage v-if="user.avatar" :src="user.avatar" alt="Irene Arknight" class="w-16 h-16 rounded-full" />
@@ -21,13 +20,13 @@
             <p v-else-if="!posts.length" class="text-center">There is no posts, create one!</p>
             <template v-else>
                 <Post v-for="post in posts" :key="post.id" :post="post" @select-post="post => selectedPost = post"
-                    @edit-post="post => editPost = post" @delete-post="handleDeletePost" @like-post="handleLikePost" />
+                    @edit-post="post => editPost = post" @delete-post="handleDeletePost" @like-post="handleLikePost" @share-post="post => sharePost = post" />
             </template>
         </div>
-        <div></div>
         <PostCreate v-if="createPostStatus" @close="createPostStatus = false" @create-post="handlePostCreated" />
         <PostSelected v-if="selectedPost" @close="selectedPost = null" :post="selectedPost" @edit-post="post => editPost = post" @delete-post="handleDeletePost" @like-post="handleLikePost" @delete-comment="handleDeleteComment" @post-comment="handlePostComment" />
         <PostEdit v-if="editPost" @close="editPost = null" :post="editPost" @update-post="handlePostUpdated" />
+        <PostShare v-if="sharePost" @close="sharePost = null" :post="sharePost" @share-post="handlePostCreated" />
     </div>
 </template>
 <script setup lang="ts">
@@ -43,10 +42,18 @@ const { data: posts, status, error, refresh } = await getPosts();
 const selectedPost = ref<IPost | null>(null);
 const createPostStatus = ref<boolean>(false);
 const editPost = ref<IPost | null>(null);
+const sharePost = ref<IPost | null>(null);
 
 const handlePostCreated = (post: IPost) => {
     posts.value.unshift(post);
     createPostStatus.value = false;
+    sharePost.value = null;
+    if (post.isShare && post.share) {
+        const index = posts.value.findIndex(p => p.id === post.share?.id);
+        if (index !== -1) {
+            posts.value[index].sharesCount = post.share!.sharesCount;
+        }
+    }
 }
 
 const handlePostUpdated = (post: IPost) => {

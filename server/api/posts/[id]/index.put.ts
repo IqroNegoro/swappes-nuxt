@@ -45,7 +45,7 @@ export default defineEventHandler({
             body.image = newImage ?? body.image?.replace('/images/', '') ?? null;
     
             const { content, image, visibility } = await object<Pick<IPost, "content" | "visibility">>().shape({
-                content: string().when("image", ([val], schema) => val ? schema.notRequired() : schema.required()).ensure().trim(),
+                content: string().max(5000).ensure().trim().when("image", ([val], schema) => val ? schema.notRequired() : schema.required()).ensure().trim(),
                 image: mixed().when("content", ([val], schema) => val ? schema.notRequired() : schema.required()),
                 visibility: string().oneOf(Object.values(Visibility)).required().default(Visibility.PUBLIC)
             }, [["content", "image"]]).validate(body, {abortEarly: false});
