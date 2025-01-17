@@ -47,13 +47,15 @@ export default defineEventHandler({
                 }
             }
 
+            console.log(updated)
+
             const config = useRuntimeConfig();
 
             const accessToken = jwt.sign({
                 id: user!._id,
                 username: user!.username,
                 name: user!.name, 
-                avatar: user!.login_type === 'google' && user!.avatar.startsWith('http') ? user!.avatar : user!.avatar && `/images/${user!.avatar}`,
+                avatar: `/images/${image}`,
             }, config.JWT_SECRET);
     
             setCookie(e, 'access_token', accessToken, {

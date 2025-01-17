@@ -53,7 +53,7 @@ export default defineEventHandler({
                 id: user!._id,
                 username: user!.username,
                 name: user!.name, 
-                avatar: user!.avatar,
+                avatar: `/images/${user!.avatar}`,
             }, config.JWT_SECRET);
     
             setCookie(e, 'access_token', accessToken, {

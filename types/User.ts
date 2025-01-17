@@ -12,5 +12,6 @@ export interface IUser {
 
 export interface IToken {
     user: Pick<IUser, 'id'>
-    token: string
+    token: string,
+    expiredAt: number
 }

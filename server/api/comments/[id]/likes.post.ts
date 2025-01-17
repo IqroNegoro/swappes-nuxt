@@ -26,7 +26,7 @@ export default defineEventHandler({
                     }
                 }, {
                     new: true
-                }).select("likesCount");
+                }).select("likesCount replyId");
             } else {
                 comment = await Comment.findByIdAndUpdate(id, {
                     $inc: {
@@ -37,13 +37,14 @@ export default defineEventHandler({
                     }
                 }, {
                     new: true
-                }).select("likesCount");
+                }).select("likesCount replyId");
             }
 
             return {
                 data: comment
             }
         } catch (error : any) {
+            console.log(error)
             throw createError({
                 statusCode: error.statusCode || 500,
                 message: "Internal Server Error"

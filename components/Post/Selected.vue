@@ -109,11 +109,32 @@ const handleImageUpload = (event: Event) => {
   }
 }
 
-const handleLikeComment = (data: Pick<IComment, "id" | "likesCount">) => {
-  const index = comments.value.findIndex(comment => comment.id === data.id);
-  if (index !== -1) {
-    comments.value[index].likesCount = data.likesCount;
+const handleLikeComment = (data: Pick<IComment, "id" | "likesCount" | "replyId">) => {
+  if (data.replyId) {
+    const index = comments.value.findIndex(comment => comment.id === data.replyId);
+    if (index !== -1) {
+      const indexReply = comments.value[index].replies?.findIndex(reply => reply.id === data.id);
+      if (indexReply !== -1) {
+        // @ts-ignore
+        comments.value[index].replies![indexReply].likesCount = data.likesCount;
+      }
+    }
+  } else {
+    const index = comments.value.findIndex(comment => comment.id === data.id);
+    if (index !== -1) {
+      comments.value[index].likesCount = data.likesCount;
+    }
   }
+  // if (index !== -1) {
+  //   if (data.replyId) {
+  //     const indexReply = comments.value[index].replies?.findIndex(reply => reply.id === data.replyId);
+  //     if (indexReply !== -1) {
+  //       comments.value[index].replies![indexReply].likesCount = data.likesCount;
+  //     }
+  //   } else {
+  //     comments.value[index].likesCount = data.likesCount;
+  //   }
+  // }
 }
 
 const handleDeleteComment = (data: Pick<IComment, "id" | "post" | "replyId">) => {
@@ -157,10 +178,10 @@ const handleSubmitForm = handleSubmit(async ({ content, image }) => {
     }
 
     emit("postComment", response.data.post);
-  } catch (error) {
+  } catch (error : any) {
     toast({
       title: "Error!",
-      description: "Oops, we cannot create your comment right now, try again.",
+      description: "Oops, we cannot create your comment right now, try again. Error : " + error.message,
     });
   }
 });

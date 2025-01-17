@@ -73,7 +73,7 @@
             <p class="text-justify text-sm">{{ post.content }}</p>
         </div>
         <div v-if="post.isShare && post.share" class="px-4">
-          <Post :post="post.share!" :isShare="post.isShare" />
+          <Post :post="post.share!" :isShare="post.isShare" @select-post="emit('selectPost', $event)" />
         </div>
         <div v-else-if="!isShare && post.isShare && !post.share" class="text-center my-4">
           <i class="bx bx-ghost"></i>

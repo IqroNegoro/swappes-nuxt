@@ -12,7 +12,7 @@
             <DropdownMenu>
                 <DropdownMenuTrigger as-child>
                     <Avatar>
-                        <AvatarImage v-if="user.avatar" :src="user.avatar" alt="Irene Arknight" class="w-16 h-16 rounded-full" />
+                        <AvatarImage v-if="user.avatar" :src="user.avatar" alt="Irene Arknight" class="w-20 h-20 rounded-full" />
                         <AvatarFallback>
                             <Skeleton class="rounded-full" />
                         </AvatarFallback>

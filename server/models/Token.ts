@@ -4,11 +4,15 @@ import User from "models/User";
 const tokenSchema = new mongoose.Schema<IToken>({
     user: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: User,
+        ref: "users",
         required: true
     },
     token: {
         type: String,
+        required: true
+    },
+    expiredAt: {
+        type: Number,
         required: true
     }
 }, {

@@ -7,7 +7,15 @@ export default defineEventHandler({
     handler: async (e) => {
         try {
             const id = getRouterParam(e, "id");
-            // const comments = await Comment.find({ post: id }).populate("user").populate("replyId");
+            // const comments = await Comment.find({ post: id }).populate([
+            //     {
+            //         path: "user",
+            //         select: "name avatar"
+            //     }, {
+            //         path: "replyId",
+            //         // as: "replies",
+            //     }
+            // ]);
             const comments = await Comment.aggregate([
                 {
                     $match: {
@@ -38,23 +46,26 @@ export default defineEventHandler({
                                 }
                             },
                             {
+                                $project: {
+                                    post: 0,
+                                    likes: 0
+                                }
+                            },
+                            {
                                 $unwind: "$user"
                             },
                             {
-                                $project: {
-                                    id: "$_id",
-                                    _id: 0,
-                                    user: "$user",
-                                    replies: "$replies",
-                                    post: "$post",
-                                    content: "$content",
-                                    image: "$image",
-                                    likesCount: "$likesCount",
-                                    createdAt: "$createdAt",
-                                    updatedAt: "$updatedAt"
+                                $addFields: {
+                                    "user.avatar": {
+                                        $concat: ["/images/", "$user.avatar"]
+                                    },
+                                    id: "$_id"
                                 }
+                            },
+                            {
+                                $unset: ["_id", "__v"]
                             }
-                        ]
+                        ],
                     }
                 },
                 {
@@ -66,7 +77,9 @@ export default defineEventHandler({
                                     id: "$_id",
                                     _id: 0,
                                     name: 1,
-                                    avatar: 1
+                                    avatar: {
+                                        $concat: ["/images/", "$avatar"]
+                                    }
                                 }
                             }
                         ]
@@ -81,7 +94,6 @@ export default defineEventHandler({
                         _id: 0,
                         user: "$user",
                         replies: "$replies",
-                        post: "$post",
                         content: "$content",
                         image: "$image",
                         likesCount: "$likesCount",
@@ -92,6 +104,7 @@ export default defineEventHandler({
             ])
             return { data: comments };
         } catch (error) {
+            console.log(error)
             throw createError({
                 statusCode: 500,
                 statusMessage: "Internal Server Error"

@@ -44,13 +44,13 @@ const user = useUserStore();
 
 const emit = defineEmits<{
     (e: 'deleteComment', data: Pick<IComment, "id" | "post" | "replyId">): void
-    (e: 'likeComment', data: Pick<IComment, "id" | "likesCount">): void
+    (e: 'likeComment', data: Pick<IComment, "id" | "likesCount" | "replyId">): void
     (e: 'replyComment', data: IComment): void
 }>();
 
 const handleLikeComment = async () => {
   try {
-    const response = await $fetch<{data: Pick<IComment, "id" | "likesCount">}>(`/api/comments/${props.comment.id}/likes`, {
+    const response = await $fetch<{data: Pick<IComment, "id" | "likesCount" | "replyId">}>(`/api/comments/${props.comment.id}/likes`, {
       method: "POST"
     });
 

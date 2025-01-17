@@ -1,7 +1,7 @@
 import { OAuth2Client } from "google-auth-library";
 import User from "models/User";
-import jwt from "jsonwebtoken";
 import Token from "models/Token";
+import jwt from "jsonwebtoken";
 import slugify from "slugify";
 
 export default defineEventHandler(async (event) => {
@@ -22,7 +22,7 @@ export default defineEventHandler(async (event) => {
             url: 'https://www.googleapis.com/oauth2/v3/userinfo'
         });
 
-        let user = await User.findOne({ email: userInfo.data.email }).select('-password');
+        let user = await User.findOne({ email: userInfo.data.email }).select('-password -banner');
 
         if (!user) {
             user = await User.create({
@@ -39,11 +39,11 @@ export default defineEventHandler(async (event) => {
             username: user.username,
             name: user.name, 
             avatar: user.login_type === 'google' && user.avatar.startsWith('http') ? user.avatar : user.avatar && `/images/${user.avatar}`,
-        }, config.JWT_SECRET);
+        }, config.JWT_SECRET, { expiresIn: '1h' });
 
         const refreshToken = jwt.sign({
             id: user._id,
-        }, config.REFRESH_SECRET);
+        }, config.REFRESH_SECRET, { expiresIn: '30d' });
 
         setCookie(event, 'access_token', accessToken, {
             httpOnly: true,
@@ -59,7 +59,7 @@ export default defineEventHandler(async (event) => {
             maxAge: 60 * 60 * 24 * 30
         });
 
-        await Token.findByIdAndUpdate(user._id, { token: refreshToken }, { upsert: true });
+        await Token.findByIdAndUpdate(user._id, { user: user._id, token: refreshToken, expiredAt: Date.now() + (1000 * 60 * 60 * 24 * 30) }, { upsert: true });
 
         return {
             data: user

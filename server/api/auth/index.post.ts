@@ -1,4 +1,5 @@
 import User from "models/User";
+import Token from "models/Token";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { object, string, ValidationError } from 'yup';
@@ -44,11 +45,11 @@ export default defineEventHandler(async e => {
             username: user.username,
             name: user.name, 
             avatar: user.login_type === 'google' && user.avatar.startsWith('http') ? user.avatar : user.avatar && `/images/${user.avatar}`,
-        }, config.JWT_SECRET);
+        }, config.JWT_SECRET, { expiresIn: '1h' });
 
         const refreshToken = jwt.sign({
             id: user._id,
-        }, config.REFRESH_SECRET);
+        }, config.REFRESH_SECRET, { expiresIn: '30d' });
 
         setCookie(e, 'access_token', accessToken, {
             httpOnly: true,
@@ -63,6 +64,8 @@ export default defineEventHandler(async e => {
             sameSite: "strict",
             maxAge: 60 * 60 * 24 * 30
         });
+
+        await Token.findByIdAndUpdate(user._id, { user: user._id, token: refreshToken, expiredAt: Date.now() + (1000 * 60 * 60 * 24 * 30) }, { upsert: true });
     
         return {
             data: user

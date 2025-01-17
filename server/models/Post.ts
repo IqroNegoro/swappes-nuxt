@@ -1,10 +1,11 @@
 import { Schema, model } from 'mongoose';
 import User from './User';
+import Comment from './Comment';
 
 const postSchema = new Schema<IPost>({
   user: {
     type: Schema.Types.ObjectId,
-    ref: User,
+    ref: "users",
     required: true
   },
   visibility: {
@@ -75,6 +76,10 @@ postSchema.post("save", {document: true}, async function(doc: IPost) {
     }
     await post.updateOne({$inc: {sharesCount: 1}});
   }
+});
+
+postSchema.post("deleteOne", {document: true}, async function(doc: IPost) {
+  const comments = await Comment.deleteMany({post: doc._id});
 });
 
 const Post = model('posts', postSchema);

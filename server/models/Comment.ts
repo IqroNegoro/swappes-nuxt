@@ -1,16 +1,16 @@
 import { Schema, model } from 'mongoose';
-import User from 'models/User';
-import Post from 'models/Post';
+import Post from './Post';
+import User from './User';
 
 const commentSchema = new Schema<IComment>({
   user: {
     type: Schema.Types.ObjectId,
-    ref: User,
+    ref: "users",
     required: true
   },
   post: {
     type: Schema.Types.ObjectId, 
-    ref: Post,
+    ref: "posts",
     required: true
   },
   content: {

@@ -14,12 +14,20 @@ export default defineEventHandler({
                 })
             }
 
-            const posts = await Post.find({ user: user.id }).populate([{
+            const posts = await Post.find({ user: user.id, $or: [
+                {
+                    visibility: 'Public'
+                },
+                {
+                    user: event.context.auth.id,
+                    visibility: 'Private'
+                }
+            ] }).populate([{
                 path: "user",
                 select: "-email -password",
             }, {
                 path: "share",
-                select: '-likesCount -commentsCount -sharesCount -likes -comments -share',
+                select: '-likes -comments -share',
                 populate: {
                     path: "user",
                     select: "-email -password"
