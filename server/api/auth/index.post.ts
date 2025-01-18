@@ -55,14 +55,16 @@ export default defineEventHandler(async e => {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
             sameSite: "strict",
-            maxAge: 60 * 60
+            maxAge: 60 * 60,
+            path: '/'
         });
 
         setCookie(e, 'refresh_token', refreshToken, {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
             sameSite: "strict",
-            maxAge: 60 * 60 * 24 * 30
+            maxAge: 60 * 60 * 24 * 30,
+            path: '/'
         });
 
         await Token.findByIdAndUpdate(user._id, { user: user._id, token: refreshToken, expiredAt: Date.now() + (1000 * 60 * 60 * 24 * 30) }, { upsert: true });

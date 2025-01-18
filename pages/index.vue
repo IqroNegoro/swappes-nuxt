@@ -3,7 +3,8 @@
         <div class="w-full flex flex-col gap-2">
             <div class="flex gap-2 w-full bg-primary p-4">
                 <Avatar>
-                    <AvatarImage v-if="user.avatar" :src="user.avatar" alt="Irene Arknight" class="w-16 h-16 rounded-full" />
+                    <AvatarImage referrer-policy="no-referrer" v-if="user.avatar" :src="user.avatar"
+                        alt="Irene Arknight" class="w-16 h-16 rounded-full" />
                     <AvatarFallback>
                         <Skeleton class="rounded-full" />
                     </AvatarFallback>
@@ -16,15 +17,25 @@
             <template v-if="status === 'pending'">
                 <PostSkeleton v-for="i in 5" :key="i" />
             </template>
-            <div v-else-if="status === 'error'">Error</div>
+            <div v-else-if="status === 'error'" class="w-full flex flex-col h-dvh justify-center items-center gap-4">
+                <i class="bx bx-error text-white text-2xl"></i>
+                <p class="text-white text-2xl font-bold">Error</p>
+                <p class="text-gray-300 font-light">We cannot load this user right now, please try again later.</p>
+                <Button @click="refresh">
+                    Refresh
+                </Button>
+            </div>
             <p v-else-if="!posts.length" class="text-center">There is no posts, create one!</p>
             <template v-else>
                 <Post v-for="post in posts" :key="post.id" :post="post" @select-post="post => selectedPost = post"
-                    @edit-post="post => editPost = post" @delete-post="handleDeletePost" @like-post="handleLikePost" @share-post="post => sharePost = post" />
+                    @edit-post="post => editPost = post" @delete-post="handleDeletePost" @like-post="handleLikePost"
+                    @share-post="post => sharePost = post" />
             </template>
         </div>
         <PostCreate v-if="createPostStatus" @close="createPostStatus = false" @create-post="handlePostCreated" />
-        <PostSelected v-if="selectedPost" @close="selectedPost = null" :post="selectedPost" @edit-post="post => editPost = post" @delete-post="handleDeletePost" @like-post="handleLikePost" @delete-comment="handleDeleteComment" @post-comment="handlePostComment" />
+        <PostSelected v-if="selectedPost" @close="selectedPost = null" :post="selectedPost"
+            @edit-post="post => editPost = post" @delete-post="handleDeletePost" @like-post="handleLikePost"
+            @delete-comment="handleDeleteComment" @post-comment="handlePostComment" />
         <PostEdit v-if="editPost" @close="editPost = null" :post="editPost" @update-post="handlePostUpdated" />
         <PostShare v-if="sharePost" @close="sharePost = null" :post="sharePost" @share-post="handlePostCreated" />
     </div>

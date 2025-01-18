@@ -1,4 +1,5 @@
 import Post from "models/Post";
+import Notification from "models/Notification";
 import { Types } from "mongoose";
 const { ObjectId } = Types;
 
@@ -14,7 +15,6 @@ export default defineEventHandler({
                 }
             });
 
-
             let post;
 
             if (exists) {
@@ -27,7 +27,7 @@ export default defineEventHandler({
                     }
                 }, {
                     new: true
-                }).select("likesCount");
+                }).select("user likesCount");
             } else {
                 post = await Post.findByIdAndUpdate(id, {
                     $inc: {
@@ -38,13 +38,30 @@ export default defineEventHandler({
                     }
                 }, {
                     new: true
-                }).select("likesCount");
+                }).select("user likesCount");
             }
+            
+            if (post!.user.toString() != e.context.auth.id) {
+                await Notification.findOneAndUpdate({
+                  post: post!._id,
+                  to: post!.user,
+                  type: 'like'
+                }, {
+                  from: e.context.auth.id,
+                  isRead: false,
+                  $addToSet: {
+                    users: e.context.auth.id
+                  }
+                }, {
+                  upsert: true
+                })
+              }
 
             return {
                 data: post
             }
         } catch (error : any) {
+            console.log(error)
             throw createError({
                 statusCode: error.statusCode || 500,
                 message: "Internal Server Error"

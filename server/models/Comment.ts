@@ -1,6 +1,7 @@
 import { Schema, model } from 'mongoose';
 import Post from './Post';
 import User from './User';
+import Notification from './Notification';
 
 const commentSchema = new Schema<IComment>({
   user: {
@@ -74,6 +75,21 @@ commentSchema.post('save', {document: true}, async function(doc: IComment) {
     throw new Error("Post not found");
   }
   await post.updateOne({$inc: {commentsCount: 1}});
+  if (doc.user.toString() != post.user.toString()) {
+    await Notification.findOneAndUpdate({
+      post: doc.post,
+      to: post.user,
+      type: 'comment'
+    }, {
+      from: doc.user,
+      isRead: false,
+      $addToSet: {
+        users: doc.user
+      }
+    }, {
+      upsert: true
+    })
+  }
 });
 
 commentSchema.post('deleteOne', {document: true}, async function(doc: IComment) {

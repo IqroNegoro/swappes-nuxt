@@ -17,7 +17,8 @@
           <div class="flex justify-between px-4 py-2">
             <div class="flex gap-4">
               <Avatar>
-                <AvatarImage v-if="user.avatar" :src="user.avatar" alt="Irene Arknight" class="w-16 h-16 rounded-full" />
+                <AvatarImage referrer-policy="no-referrer" v-if="user.avatar" :src="user.avatar" alt="Irene Arknight"
+                  class="w-16 h-16 rounded-full" />
                 <AvatarFallback>
                   <Skeleton class="rounded-full" />
                 </AvatarFallback>
@@ -59,8 +60,8 @@
               </div>
             </div>
           </div>
-          <div contenteditable class="w-full min-h-24 px-4 py-1 inline-block" placeholder="What do you think right now?" @keyup.ctrl.enter="handleSubmitForm"
-            @input="e => content = (e.target as HTMLDivElement).innerText"></div>
+          <div contenteditable class="w-full min-h-24 px-4 py-1 inline-block" placeholder="What do you think right now?"
+            @keyup.ctrl.enter="handleSubmitForm" @input="e => content = (e.target as HTMLDivElement).innerText"></div>
           <input type="file" id="image" name="image" accept="image/*" hidden @change="handleImageUpload" />
           <div class="w-full h-96">
             <div v-if="image" class="relative">
@@ -173,7 +174,7 @@ const imageListener = watch(image, (val, oldVal) => {
   }
 });
 
-const handleClose = (e : KeyboardEvent) => {
+const handleClose = (e: KeyboardEvent) => {
   if (e.key === "Escape") {
     emit("close");
   }

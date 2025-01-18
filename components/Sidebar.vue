@@ -9,7 +9,8 @@
             </div>
             <div class="flex flex-col items-center gap-2">
                 <Avatar class="w-20 h-20">
-                    <AvatarImage v-if="user.avatar" :src="user.avatar" alt="Profile Picture" />
+                    <AvatarImage referrer-policy="no-referrer" v-if="user.avatar" :src="user.avatar"
+                        alt="Profile Picture" />
                     <AvatarFallback>
                         <Skeleton class="rounded-full" />
                     </AvatarFallback>
@@ -17,17 +18,20 @@
                 <p class="font-light text-sm">@{{ user.username || 'Guest-chan~' }}</p>
                 <p class="font-medium text-sm">{{ user.name || 'Guest-chan~' }}</p>
             </div>
-    
+
             <nav class="flex flex-col gap-2 mt-4">
-                <NuxtLink :to="{name: 'index'}" class="flex items-center gap-2 p-2 hover:bg-white/10 rounded-lg transition-all">
+                <NuxtLink :to="{ name: 'index' }"
+                    class="flex items-center gap-2 p-2 hover:bg-white/10 rounded-lg transition-all">
                     <i class="bx bx-home-alt text-2xl"></i>
                     <span>Home</span>
                 </NuxtLink>
-                <NuxtLink v-if="user.username" :to="{name: 'users-id', params: {id: user.username}}" class="flex items-center gap-2 p-2 hover:bg-white/10 rounded-lg transition-all">
+                <NuxtLink v-if="user.username" :to="{ name: 'users-id', params: { id: user.username } }"
+                    class="flex items-center gap-2 p-2 hover:bg-white/10 rounded-lg transition-all">
                     <i class="bx bx-user text-2xl"></i>
                     <span>Profile</span>
                 </NuxtLink>
-                <button @click="handleLogout" class="flex items-center gap-2 p-2 hover:bg-white/10 rounded-lg transition-all text-left">
+                <button @click="handleLogout"
+                    class="flex items-center gap-2 p-2 hover:bg-white/10 rounded-lg transition-all text-left">
                     <i class="bx bx-log-out text-2xl"></i>
                     <span>Logout</span>
                 </button>
@@ -63,16 +67,16 @@ const handleLogout = async () => {
 <style scoped>
 .v-enter-active,
 .v-leave-active {
-  transition: opacity 0.5s ease;
+    transition: opacity 0.5s ease;
 }
 
 .v-enter-from,
 .v-leave-to {
-  transform: translateX(-80%);
+    transform: translateX(-80%);
 }
 
 .v-enter-to,
 .v-leave-from {
-  transform: translateX(0);
+    transform: translateX(0);
 }
 </style>

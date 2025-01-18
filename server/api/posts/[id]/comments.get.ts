@@ -57,7 +57,15 @@ export default defineEventHandler({
                             {
                                 $addFields: {
                                     "user.avatar": {
-                                        $concat: ["/images/", "$user.avatar"]
+                                        $cond: [
+                                            {
+                                                $eq: ["$user.login_type", "google"]
+                                            },
+                                            "$user.avatar",
+                                            {
+                                                $concat: ["/images/", "$user.avatar"]
+                                            }
+                                        ]
                                     },
                                     id: "$_id"
                                 }
@@ -78,7 +86,15 @@ export default defineEventHandler({
                                     _id: 0,
                                     name: 1,
                                     avatar: {
-                                        $concat: ["/images/", "$avatar"]
+                                        $cond: [
+                                            {
+                                                $eq: ["$login_type", "google"]
+                                            },
+                                            "$avatar",
+                                            {
+                                                $concat: ["/images/", "$avatar"]
+                                            }
+                                        ]
                                     }
                                 }
                             }
