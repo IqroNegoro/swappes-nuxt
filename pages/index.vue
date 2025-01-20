@@ -4,7 +4,7 @@
             <div class="flex gap-2 w-full bg-primary p-4">
                 <Avatar>
                     <AvatarImage referrer-policy="no-referrer" v-if="user.avatar" :src="user.avatar"
-                        alt="Irene Arknight" class="w-16 h-16 rounded-full" />
+                        :alt="`${user.name} avatar`" class="w-16 h-16 rounded-full" />
                     <AvatarFallback>
                         <Skeleton class="rounded-full" />
                     </AvatarFallback>
@@ -35,9 +35,9 @@
         <PostCreate v-if="createPostStatus" @close="createPostStatus = false" @create-post="handlePostCreated" />
         <PostSelected v-if="selectedPost" @close="selectedPost = null" :post="selectedPost"
             @edit-post="post => editPost = post" @delete-post="handleDeletePost" @like-post="handleLikePost"
-            @delete-comment="handleDeleteComment" @post-comment="handlePostComment" />
+            @delete-comment="handleDeleteComment" @post-comment="handlePostComment" @share-post="sharePost = $event" />
         <PostEdit v-if="editPost" @close="editPost = null" :post="editPost" @update-post="handlePostUpdated" />
-        <PostShare v-if="sharePost" @close="sharePost = null" :post="sharePost" @share-post="handlePostCreated" />
+        <PostShare v-if="sharePost" @close="sharePost = null" :post="sharePost" />
     </div>
 </template>
 <script setup lang="ts">

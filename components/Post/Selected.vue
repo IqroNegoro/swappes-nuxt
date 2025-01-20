@@ -7,7 +7,7 @@
         @click.stop>
         <div class="flex justify-between items-center relative text-center p-2">
           <div></div>
-          <p class="text-2xl"> {{ post.user.name }} Post </p>
+          <p class="text-xl"> {{ post.user.name }} Post </p>
           <button @click="emit('close')">
             <i class="bx bx-x text-2xl"></i>
           </button>
@@ -16,24 +16,30 @@
           <Post :post="post" @edit-post="emit('editPost', $event)" @delete-post="emit('deletePost', $event)"
             @like-post="emit('likePost', $event)" @share-post="emit('sharePost', $event)" />
           <div class="p-2">
-            <PostComment v-for="comment in comments" :key="comment.id" :comment="comment"
-              @delete-comment="handleDeleteComment" @like-comment="handleLikeComment"
-              @reply-comment="comment => reply = comment" />
+            <template v-if="status === 'pending'">
+              <PostCommentSkeleton v-for="i in 5" :key="i" />
+            </template>
+            <Error v-else-if="error" :refresh="refresh" />
+            <template v-else>
+              <PostComment v-for="comment in comments" :key="comment.id" :comment="comment"
+                @delete-comment="handleDeleteComment" @like-comment="handleLikeComment"
+                @reply-comment="comment => reply = comment" />
+            </template>
           </div>
         </div>
         <form class="flex flex-col gap-2 w-full bg-primary p-4" @submit.prevent="handleSubmitForm">
           <p class="text-sm" v-if="reply">Reply to <span class="font-medium">{{ reply.user.name }}</span></p>
           <div class="flex gap-4 w-full">
-            <Avatar>
-              <AvatarImage referrer-policy="no-referrer" v-if="user.avatar" :src="user.avatar" alt="Irene Arknight"
-                class="w-16 h-16 rounded-full" />
+            <Avatar class="w-8 h-8">
+              <AvatarImage referrer-policy="no-referrer" v-if="user.avatar" :src="user.avatar"
+                :alt="`${user.name} avatar`" />
               <AvatarFallback>
                 <Skeleton class="rounded-full" />
               </AvatarFallback>
             </Avatar>
             <div ref="inputArea" contenteditable @input="content = ($event.target as HTMLDivElement)!.innerText"
-              placeholder="What do you think right now?"
-              class="bg-black/10 w-full p-2 max-h-48 overflow-y-auto overflow-x-hidden"
+              placeholder="Write your comment..."
+              class="bg-black/10 w-full p-2 max-h-48 overflow-y-auto overflow-x-hidden before:truncate before:whitespace-nowrap before:break-words before:max-md:text-sm"
               @keyup.ctrl.enter="handleSubmitForm"
               :class="{ 'border border-red-500': errors.image || errors.content }" />
             <div class="flex gap-2">
@@ -49,7 +55,7 @@
             </div>
           </div>
           <img v-if="previewImage" :src="previewImage" alt="Preview Image"
-            class="w-32 h-32 object-cover rounded-md cursor-pointer" @click="image = null" />
+            class="max-w-48 aspect-auto object-contain rounded-sm cursor-pointer" @click="image = null" />
         </form>
       </div>
     </Transition>
@@ -73,17 +79,21 @@ const props = defineProps<{
   post: IPost
 }>();
 
+useHead({
+  title: `Post from ${props.post.user.name} | Swappes`
+});
+
 const user = useUserStore();
 
 const { toast } = useToast();
 
-const { data: comments, status, error } = await getComments(props.post.id);
+const { data: comments, status, error, refresh } = await getComments(props.post.id);
 
 const inputArea = ref<HTMLDivElement | null>(null);
 
 const { errors, defineField, handleSubmit, isValidating, isSubmitting, resetForm } = useForm<Pick<IComment, "content"> & { image: File | null }>({
   validationSchema: toTypedSchema(object().shape({
-    content: string().max(100).ensure().trim().when("image", ([val], schema) => val ? schema.notRequired() : schema.required()),
+    content: string().max(5000).ensure().trim().when("image", ([val], schema) => val ? schema.notRequired() : schema.required()),
     image: mixed().when("content", ([val], schema) => val ? schema.notRequired() : schema.required()),
   }, [["content", "image"]])),
   initialValues: {
@@ -109,7 +119,7 @@ const handleImageUpload = (event: Event) => {
   const input = event.target as HTMLInputElement;
   const file = input.files?.[0];
 
-  const allowedExtensions = ['jpg', 'jpeg', 'png', 'gif'];
+  const allowedExtensions = ['jpg', 'jpeg', 'png', 'webp'];
   const fileExtension = file?.name.split('.').pop()?.toLowerCase();
 
   if (!fileExtension || !allowedExtensions.includes(fileExtension)) {

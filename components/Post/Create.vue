@@ -9,7 +9,8 @@
             <i class="bx bx-x text-2xl"></i>
           </button>
           <p class="text-2xl">Create Post</p>
-          <Button type="submit" :disabled="isSubmitting || isValidating || (!content && !image)">
+          <Button type="submit"
+            :disabled="isSubmitting || isValidating || content!.length > 5000 || (!content && !image)">
             Post
           </Button>
         </div>
@@ -17,8 +18,8 @@
           <div class="flex justify-between px-4 py-2">
             <div class="flex gap-4">
               <Avatar>
-                <AvatarImage referrer-policy="no-referrer" v-if="user.avatar" :src="user.avatar" alt="Irene Arknight"
-                  class="w-16 h-16 rounded-full" />
+                <AvatarImage referrer-policy="no-referrer" v-if="user.avatar" :src="user.avatar"
+                  :alt="`${user.name} avatar`" class="w-16 h-16 rounded-full" />
                 <AvatarFallback>
                   <Skeleton class="rounded-full" />
                 </AvatarFallback>
@@ -60,8 +61,11 @@
               </div>
             </div>
           </div>
-          <div contenteditable class="w-full min-h-24 px-4 py-1 inline-block" placeholder="What do you think right now?"
+          <div contenteditable :class="{ 'border border-red-500': content!.length > 5000 || errors?.content }"
+            class="w-full min-h-24 px-4 py-1 inline-block" placeholder="What do you think right now?"
             @keyup.ctrl.enter="handleSubmitForm" @input="e => content = (e.target as HTMLDivElement).innerText"></div>
+          <p v-if="content!.length > 4000" class="text-xs text-right text-gray-400 px-4"
+            :class="{ 'text-red-400': content!.length > 5000 }">{{ content!.length }} / 5000</p>
           <input type="file" id="image" name="image" accept="image/*" hidden @change="handleImageUpload" />
           <div class="w-full h-96">
             <div v-if="image" class="relative">
@@ -95,13 +99,14 @@ const { toast } = useToast();
 
 const user = useUserStore();
 
-const { defineField, handleSubmit, isValidating, isSubmitting } = useForm<Pick<IPost, 'content' | 'visibility'> & { image: File | null }>({
+const { defineField, handleSubmit, isValidating, isSubmitting, errors } = useForm<Pick<IPost, 'content' | 'visibility'> & { image: File | null }>({
   validationSchema: toTypedSchema(object().shape({
-    content: string().ensure().trim().when("image", ([val], schema) => val ? schema.notRequired() : schema.required()),
+    content: string().max(5000).ensure().trim().when("image", ([val], schema) => val ? schema.notRequired() : schema.required()),
     image: mixed().when("content", ([val], schema) => val ? schema.notRequired() : schema.required()),
     visibility: string().oneOf(Object.values(Visibility)).required().default(Visibility.PUBLIC)
   }, [["content", "image"]])),
   initialValues: {
+    content: "",
     visibility: Visibility.PUBLIC
   }
 });
@@ -123,7 +128,7 @@ const handleImageUpload = (event: Event) => {
   const input = event.target as HTMLInputElement;
   const file = input.files?.[0];
 
-  const allowedExtensions = ['jpg', 'jpeg', 'png', 'gif'];
+  const allowedExtensions = ['jpg', 'jpeg', 'png', 'webp'];
   const fileExtension = file?.name.split('.').pop()?.toLowerCase();
 
   if (!fileExtension || !allowedExtensions.includes(fileExtension)) {

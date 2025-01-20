@@ -50,7 +50,7 @@ export default defineEventHandler({
                 visibility: string().oneOf(Object.values(Visibility)).required().default(Visibility.PUBLIC)
             }, [["content", "image"]]).validate(body, {abortEarly: false});
     
-            let updatedPost = await Post.findOneAndUpdate({ _id: id }, { visibility, content, image }, {
+            let updatedPost = await Post.findOneAndUpdate({ _id: id, user: e.context.auth.id }, { visibility, content, image }, {
                 new: true
             }).populate([
                 {

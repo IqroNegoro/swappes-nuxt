@@ -1,6 +1,7 @@
 import { Schema, model } from 'mongoose';
 import User from './User';
 import Comment from './Comment';
+import Notification from './Notification';
 
 const postSchema = new Schema<IPost>({
   user: {
@@ -79,7 +80,8 @@ postSchema.post("save", {document: true}, async function(doc: IPost) {
 });
 
 postSchema.post("deleteOne", {document: true}, async function(doc: IPost) {
-  const comments = await Comment.deleteMany({post: doc._id});
+  await Comment.deleteMany({post: doc._id});
+  await Notification.deleteMany({post: doc._id});
 });
 
 const Post = model('posts', postSchema);

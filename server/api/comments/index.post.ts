@@ -35,7 +35,7 @@ export default defineEventHandler({
             body.image = image;
             const { post, content, replyId } = await object<Pick<IComment, "content" | "image">>().shape({
                 post: string().required(),
-                content: string().ensure().trim().when("image", ([val], schema) => val ? schema.notRequired() : schema.required()),
+                content: string().max(5000).ensure().trim().when("image", ([val], schema) => val ? schema.notRequired() : schema.required()),
                 image: mixed().when("content", ([val], schema) => val ? schema.notRequired() : schema.required()),
                 replyId: string().nullable()
             }, [["content", "image"]]).validate(body, {abortEarly: false});
@@ -44,7 +44,7 @@ export default defineEventHandler({
        
             const data = await comment.populate([{
                 path: "user",
-                select: "avatar name login_type",
+                select: "avatar username name login_type",
             }, {
                 path: "post",
                 select: "id commentsCount"

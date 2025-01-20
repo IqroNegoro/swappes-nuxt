@@ -9,5 +9,10 @@ export const getComments = async (postId: string) => await useFetch<IComment[]>(
     lazy: true,
     default: () => [],
     transform: (res : any) => res.data,
-    key: "get-comments"
+    key: `get-comments-${postId}`
 });
+
+export const copyLink = id => {
+    let text = `${window.location.origin}/posts/${id}`
+    navigator.clipboard.writeText(text);
+}

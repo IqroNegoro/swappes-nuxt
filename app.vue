@@ -1,5 +1,5 @@
 <template>
-  <NuxtLayout class="bg-black/90 w-full min-h-dvh flex flex-col text-white">
+  <NuxtLayout>
     <NuxtPage />
     <Toaster />
   </NuxtLayout>

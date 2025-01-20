@@ -39,7 +39,8 @@ export default defineEventHandler({
                                                 id: "$_id",
                                                 _id: 0,
                                                 name: 1,
-                                                avatar: 1
+                                                avatar: 1,
+                                                username: 1
                                             }
                                         }
                                     ]
@@ -67,6 +68,17 @@ export default defineEventHandler({
                                             }
                                         ]
                                     },
+                                    "image": {
+                                        $cond: [
+                                            {
+                                                $eq: ["$image", null]
+                                            },
+                                            "$image",
+                                            {
+                                                $concat: ["/images/", "$image"]
+                                            }
+                                        ]
+                                    },
                                     id: "$_id"
                                 }
                             },
@@ -85,6 +97,7 @@ export default defineEventHandler({
                                     id: "$_id",
                                     _id: 0,
                                     name: 1,
+                                    username: 1,
                                     avatar: {
                                         $cond: [
                                             {
@@ -111,7 +124,17 @@ export default defineEventHandler({
                         user: "$user",
                         replies: "$replies",
                         content: "$content",
-                        image: "$image",
+                        image: {
+                            $cond: [
+                                {
+                                    $eq: ["$image", null]
+                                },
+                                "$image",
+                                {
+                                    $concat: ["/images/", "$image"],
+                                }
+                            ]
+                        },
                         likesCount: "$likesCount",
                         createdAt: "$createdAt",
                         updatedAt: "$updatedAt"

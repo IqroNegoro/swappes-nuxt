@@ -2,14 +2,15 @@
   <div class="fixed top-0 left-0 w-full h-full bg-black/50 z-10 flex justify-center items-center overscroll-contain">
     <Transition name="fade-up" appear mode="in-out">
       <form @submit.prevent="handleSubmitForm"
-        class="bg-primary text-white relative md:rounded-md w-full md:w-3/4 lg:w-1/2 h-full md:max-h-[85%] overflow-hidden flex flex-col"
+        class="bg-primary text-white relative md:rounded-md w-full md:w-3/4 lg:w-1/2 max-h-full md:max-h-[85%] h-max overflow-hidden flex flex-col"
         @click.stop>
         <div class="flex justify-between items-center relative text-center p-2">
           <button @click="emit('close')" :disabled="isSubmitting || isValidating">
             <i class="bx bx-x text-2xl"></i>
           </button>
           <p class="text-2xl">Edit Post</p>
-          <Button type="submit" :disabled="isSubmitting || isValidating || (!content && !image)">
+          <Button type="submit"
+            :disabled="isSubmitting || isValidating || content!.length > 5000 || (!content && !image)">
             Update
           </Button>
         </div>
@@ -18,7 +19,7 @@
             <div class="flex gap-2">
               <Avatar>
                 <AvatarImage referrer-policy="no-referrer" v-if="post.user.avatar" :src="post.user.avatar"
-                  alt="Irene Arknight" class="w-16 h-16 rounded-full" />
+                  :alt="`${user.name} avatar`" class="w-16 h-16 rounded-full" />
                 <AvatarFallback>
                   <Skeleton class="rounded-full" />
                 </AvatarFallback>
@@ -60,17 +61,20 @@
               </div>
             </div>
           </div>
-          <div contenteditable class="w-full min-h-24 px-4 py-1 inline-block" placeholder="What do you think right now?"
+          <div contenteditable :class="{ 'border border-red-500': content!.length > 5000 || errors?.content }"
+            class="w-full min-h-24 px-4 py-1 inline-block" placeholder="What do you think right now?"
             @keyup.ctrl.enter="handleSubmitForm" @input="e => content = (e.target as HTMLDivElement).innerText">{{
               post.content }}</div>
-          <input type="file" id="image" name="image" accept="image/*" hidden @change="handleImageUpload" />
+          <p v-if="content!.length > 4000" class="text-xs text-right text-gray-400 px-4"
+            :class="{ 'text-red-400': content!.length > 5000 }">{{ content!.length }} / 5000</p>
+          <input type="file" id="editImage" name="editImage" accept="image/*" hidden @change="handleImageUpload" />
           <div v-if="post.isShare && post.share" class="flex flex-col gap-2 bg-primary rounded-sm"
             :class="{ 'py-2': post.isShare && !post.share?.image }">
             <div class="flex justify-between px-4 py-2">
               <div class="flex gap-2">
                 <Avatar>
                   <AvatarImage referrer-policy="no-referrer" v-if="post.share.user.avatar" :src="post.share.user.avatar"
-                    alt="Irene Arknight" class="w-16 h-16 rounded-full" />
+                    :alt="`${user.name} avatar`" class="w-16 h-16 rounded-full" />
                   <AvatarFallback>
                     <Skeleton class="rounded-full" />
                   </AvatarFallback>
@@ -87,8 +91,8 @@
                 </div>
               </div>
             </div>
-            <div class="px-4">
-              <p class="text-justify text-sm">{{ post.content }}</p>
+            <div class="px-4 min-w-0">
+              <p class="text-justify text-sm whitespace-pre-line break-words">{{ post.share.content }}</p>
             </div>
             <img v-if="post.share.image" :src="post.share.image" alt="Image Post"
               class="w-full h-auto object-contain cursor-pointer">
@@ -110,7 +114,7 @@
                 <i class="bx bx-x text-2xl"></i>
               </button>
             </div>
-            <label v-else for="image"
+            <label v-else for="editImage"
               class="w-full h-full bg-secondary flex justify-center items-center cursor-pointer">
               <i class="bx bx-image-alt text-3xl"></i>
             </label>
@@ -125,9 +129,11 @@ import { object, string, mixed } from "yup";
 import { useToast } from '@/components/ui/toast/use-toast'
 import moment from "moment";
 
+const user = useUserStore();
+
 const emit = defineEmits<{
   (e: 'close'): void
-  (e: 'update-post', data: IPost): void
+  (e: 'updatePost', data: IPost): void
 }>();
 
 const props = defineProps<{
@@ -138,7 +144,7 @@ const { toast } = useToast();
 
 const { defineField, handleSubmit, isValidating, isSubmitting, errors } = useForm<Pick<IPost, 'content' | 'visibility'> & { image: File | string | null }>({
   validationSchema: toTypedSchema(object().shape({
-    content: string().ensure().trim().when("image", ([val], schema) => val ? schema.notRequired() : schema.required()),
+    content: string().max(5000).ensure().trim().when("image", ([val], schema) => val ? schema.notRequired() : schema.required()),
     image: mixed().when("content", ([val], schema) => val ? schema.notRequired() : schema.required()),
     visibility: string().oneOf(Object.values(Visibility)).required().default(Visibility.PUBLIC)
   }, [["content", "image"]])),
@@ -166,7 +172,7 @@ const handleImageUpload = (event: Event) => {
   const input = event.target as HTMLInputElement;
   const file = input.files?.[0];
 
-  const allowedExtensions = ['jpg', 'jpeg', 'png', 'gif'];
+  const allowedExtensions = ['jpg', 'jpeg', 'png', 'webp'];
   const fileExtension = file?.name.split('.').pop()?.toLowerCase();
 
   if (!fileExtension || !allowedExtensions.includes(fileExtension)) {
@@ -198,7 +204,7 @@ const handleSubmitForm = handleSubmit(async ({ content, image, visibility }) => 
     toast({
       title: "Your post has updated!",
     });
-    emit("update-post", response.data);
+    emit("updatePost", response.data);
   } catch (error: any) {
     if (error.statusCode === 400) {
       toast({

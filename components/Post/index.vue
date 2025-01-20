@@ -5,7 +5,7 @@
         <NuxtLink :to="{ name: 'users-id', params: { id: post.user?.username } }">
           <Avatar>
             <AvatarImage referrer-policy="no-referrer" v-if="post.user.avatar" :src="post.user.avatar"
-              alt="Irene Arknight" class="w-16 h-16 rounded-full" />
+              :alt="`${user.name} avatar`" class="w-16 h-16 rounded-full" />
             <AvatarFallback>
               <Skeleton class="rounded-full" />
             </AvatarFallback>
@@ -33,9 +33,15 @@
         <DropdownMenuContent class="w-56 bg-primary text-white border-0">
           <DropdownMenuLabel class="font-bold">Post Menu</DropdownMenuLabel>
           <DropdownMenuGroup>
-            <KeepAlive>
+            <!-- <KeepAlive>
               <PostBookmarkButton :id="post.id" />
-            </KeepAlive>
+            </KeepAlive> -->
+            <DropdownMenuItem @click="copyLink(post.id)">
+              <span>Copy Link</span>
+              <DropdownMenuShortcut>
+                <i class="bx bx-link text-xl"></i>
+              </DropdownMenuShortcut>
+            </DropdownMenuItem>
             <template v-if="post.user.id == user.id">
               <DropdownMenuItem @click="emit('editPost', post)">
                 <span>Edit</span>
@@ -68,8 +74,16 @@
         </DropdownMenuContent>
       </DropdownMenu>
     </div>
-    <div class="px-4">
-      <p class="text-justify text-sm">{{ post.content }}</p>
+    <div class="px-4 min-w-0">
+      <p ref="contentContainer" class="text-justify text-sm whitespace-pre-line break-words line-clamp-6">{{
+        post.content }}
+      </p>
+      <button class="text-blue-400 text-sm" v-if="isOverflowing && !showLess" @click="handleOverflowing">
+        Read More...
+      </button>
+      <button class="text-blue-400 text-sm" v-if="isOverflowing && showLess" @click="handleOverflowing">
+        See Less...
+      </button>
     </div>
     <div v-if="post.isShare && post.share" class="px-4">
       <Post :post="post.share!" :isShare="post.isShare" @select-post="emit('selectPost', $event)" />
@@ -102,6 +116,7 @@
 import moment from 'moment';
 import { useToast } from '@/components/ui/toast/use-toast'
 
+
 const { toast } = useToast()
 
 const user = useUserStore();
@@ -118,6 +133,10 @@ const emit = defineEmits<{
   (e: 'likePost', data: Pick<IPost, "id" | "likesCount">): void
   (e: 'sharePost', data: IPost): void
 }>();
+
+const contentContainer = ref<HTMLDivElement | undefined>(undefined);
+const isOverflowing = ref<boolean>(false);
+const showLess = ref<boolean>(false);
 
 const handleLikePost = async () => {
   try {
@@ -156,4 +175,19 @@ const handleDeletePost = async () => {
     })
   }
 }
+
+const handleOverflowing = () => {
+  if (contentContainer.value) {
+    contentContainer.value.classList.toggle("line-clamp-6");
+    showLess.value = !showLess.value
+  }
+}
+
+onMounted(() => {
+  if (contentContainer.value) {
+    if (contentContainer.value.clientHeight < contentContainer.value.scrollHeight) {
+      isOverflowing.value = true;
+    }
+  }
+});
 </script>

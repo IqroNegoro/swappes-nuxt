@@ -10,7 +10,7 @@
             <i class="bx bx-x text-2xl"></i>
           </button>
           <p class="text-2xl">Share Post</p>
-          <Button type="submit" :disabled="isSubmitting || isValidating || !content">
+          <Button type="submit" :disabled="isSubmitting || isValidating || content!.length > 5000 || !content">
             <i class="bx bx-loader-alt bx-spin" v-if="isSubmitting || isValidating"></i>
             <i class="bx bx-send text-2xl" v-else></i>
           </Button>
@@ -19,8 +19,8 @@
           <div class="flex justify-between px-4 py-2">
             <div class="flex gap-4">
               <Avatar>
-                <AvatarImage referrer-policy="no-referrer" v-if="user.avatar" :src="user.avatar" alt="Irene Arknight"
-                  class="w-16 h-16 rounded-full" />
+                <AvatarImage referrer-policy="no-referrer" v-if="user.avatar" :src="user.avatar"
+                  :alt="`${user.name} avatar`" class="w-16 h-16 rounded-full" />
                 <AvatarFallback>
                   <Skeleton class="rounded-full" />
                 </AvatarFallback>
@@ -62,16 +62,18 @@
               </div>
             </div>
           </div>
-          <div contenteditable class="w-full min-h-24 px-4 py-1 inline-block"
-            placeholder="What do you think about this?" @keyup.ctrl.enter="handleSubmitForm"
-            :class="{ 'border border-red-500': errors.content }"
-            @input="e => content = (e.target as HTMLDivElement).innerText"></div>
-          <div class="flex flex-col gap-2 bg-primary rounded-sm" :class="{ 'py-2': post.isShare && !post.share?.image }">
+          <div contenteditable :class="{ 'border border-red-500': content!.length > 5000 || errors.content }"
+            class="w-full min-h-24 px-4 py-1 inline-block" placeholder="What do you think about this?"
+            @keyup.ctrl.enter="handleSubmitForm" @input="e => content = (e.target as HTMLDivElement).innerText"></div>
+          <p v-if="content!.length > 4000" class="text-xs text-right text-gray-400 px-4"
+            :class="{ 'text-red-400': content!.length > 5000 }">{{ content!.length }} / 5000</p>
+          <div class="flex flex-col gap-2 bg-primary rounded-sm"
+            :class="{ 'py-2': post.isShare && !post.share?.image }">
             <div class="flex justify-between px-4 py-2">
               <div class="flex gap-2">
                 <Avatar>
                   <AvatarImage referrer-policy="no-referrer" v-if="post.user.avatar" :src="post.user.avatar"
-                    alt="Irene Arknight" class="w-16 h-16 rounded-full" />
+                    :alt="`${user.name} avatar`" class="w-16 h-16 rounded-full" />
                   <AvatarFallback>
                     <Skeleton class="rounded-full" />
                   </AvatarFallback>
@@ -88,8 +90,8 @@
                 </div>
               </div>
             </div>
-            <div class="px-4">
-              <p class="text-justify text-sm">{{ post.content }}</p>
+            <div class="px-4 min-w-0">
+              <p class="text-justify text-sm whitespace-pre-line break-words">{{ post.content }}</p>
             </div>
             <img v-if="post.image" :src="post.image" alt="Image Post"
               class="w-full h-auto object-contain cursor-pointer">

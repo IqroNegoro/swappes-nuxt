@@ -1,17 +1,10 @@
 <template>
     <div class="md:w-3/4 w-full mx-auto">
         <UserSkeleton v-if="status === 'pending'" />
-        <div v-else-if="status === 'error'" class="w-full flex flex-col h-dvh justify-center items-center gap-4">
-            <i class="bx bx-error text-white text-2xl"></i>
-            <p class="text-white text-2xl font-bold">Error</p>
-            <p class="text-gray-300 font-light">We cannot load this user right now, please try again later.</p>
-            <Button @click="refresh">
-                Refresh
-            </Button>
-        </div>
+        <Error v-else-if="error" :refresh="refresh" :full="true" />
         <template v-else>
             <div class="w-full max-h-96 relative aspect-video rounded-b-lg overflow-hidden">
-                <input type="file" id="banner" name="banner" accept="image/*" hidden @change="handleBannerUpload" />
+                <input v-if="user?.user.id == userStore.id" type="file" id="banner" name="banner" accept="image/*" hidden @change="handleBannerUpload" />
                 <div
                     class="absolute top-0 left-0 w-full h-full bg-gradient-to-b from-transparent to-black/50 z-10 flex justify-end items-end pointer-events-none">
                     <Button v-if="previewBanner && banner" class="cursor-pointer pointer-events-auto m-2"
@@ -25,7 +18,7 @@
                 </div>
                 <label for="banner" @click="user?.user.id != userStore.id || banner ? $event.preventDefault() : null"
                     :class="{ 'pointer-events-none': user?.user.id != userStore.id || banner }">
-                    <img v-if="previewBanner && banner" :src="previewBanner" alt="User Banner"
+                    <img v-if="previewBanner && banner" :src="previewBanner!" alt="User Banner"
                         class="w-full h-full object-cover aspect-video">
                     <img v-else-if="user?.user.banner" :src="user?.user.banner" :alt="`${user?.user.name} Banner`"
                         class="w-full h-full object-cover aspect-video">
@@ -35,15 +28,15 @@
             </div>
             <div class="w-full flex px-8 -translate-y-16 relative z-20 pointer-events-none">
                 <div class="flex flex-col gap-4 pointer-events-auto relative">
-                    <input type="file" id="avatar" name="avatar" accept="image/*" hidden @change="handleAvatarUpload" />
+                    <input v-if="user?.user.id == userStore.id" type="file" id="avatar" name="avatar" accept="image/*" hidden @change="handleAvatarUpload" />
                     <label for="avatar" class="cursor-pointer pointer-events-auto"
                         @click="user?.user.id != userStore.id || avatar ? $event.preventDefault() : null"
                         :class="{ 'pointer-events-none': user?.user.id != userStore.id || avatar }">
                         <Avatar class="w-32 h-32">
                             <AvatarImage referrer-policy="no-referrer" v-if="previewAvatar && avatar"
-                                :src="previewAvatar" alt="Profile Picture" class="rounded-full" />
+                                :src="previewAvatar!" alt="Profile Picture" class="rounded-full" />
                             <AvatarImage referrer-policy="no-referrer" v-else-if="user?.user?.avatar"
-                                :src="user.user.avatar" alt="Profile Picture" class="rounded-full" />
+                                :src="user!.user.avatar" alt="Profile Picture" class="rounded-full" />
                             <AvatarFallback>
                                 <Skeleton class="rounded-full" />
                             </AvatarFallback>
@@ -72,11 +65,11 @@
                 </div>
             </div>
             <div class="lg:w-3/4 w-full mx-auto flex flex-col gap-4">
-                <p class="text-white text-2xl font-bold">Posts</p>
+                <p class="text-white text-2xl font-bold mx-2">Posts</p>
                 <div class="flex gap-2 w-full bg-primary p-4" v-if="user?.user?.id == userStore.id">
-                    <Avatar>
+                    <Avatar class="w-8 h-8">
                         <AvatarImage referrer-policy="no-referrer" v-if="userStore.avatar" :src="userStore.avatar"
-                            alt="Irene Arknight" class="w-16 h-16 rounded-full" />
+                            :alt="`${userStore.name} avatar`" />
                         <AvatarFallback>
                             <Skeleton class="rounded-full" />
                         </AvatarFallback>
@@ -91,12 +84,12 @@
                     @share-post="post => sharePost = post" />
             </div>
             <PostCreate v-if="createPostStatus" @close="createPostStatus = false" @create-post="handlePostCreated" />
-            <PostSelected v-if="selectedPost" @close="selectedPost = null" :post="selectedPost"
+            <PostSelected v-if="selectedPost" @close="selectedPost = null" :post="selectedPost!"
                 @edit-post="post => editPost = post" @delete-post="handleDeletePost" @like-post="handleLikePost"
                 @delete-comment="handleDeleteComment" @post-comment="handlePostComment"
                 @share-post="post => sharePost = post" />
-            <PostEdit v-if="editPost" @close="editPost = null" :post="editPost" @update-post="handlePostUpdated" />
-            <PostShare v-if="sharePost" @close="sharePost = null" :post="sharePost" @share-post="handlePostCreated" />
+            <PostEdit v-if="editPost" @close="editPost = null" :post="editPost!" @update-post="handlePostUpdated" />
+            <PostShare v-if="sharePost" @close="sharePost = null" :post="sharePost!" @share-post="handlePostCreated" />
         </template>
     </div>
 </template>
@@ -109,8 +102,8 @@ const userStore = useUserStore();
 const { data: user, status, error, refresh } = await getUser(id);
 
 useHead({
-    title: () => `@${user.value?.user.username} in Swappes`
-})
+    title: () => `@${user.value?.user.username ?? ''} in Swappes`,
+});
 
 const { toast } = useToast();
 
@@ -208,7 +201,7 @@ const handleAvatarUpload = (event: Event) => {
     const input = event.target as HTMLInputElement;
     const file = input.files?.[0];
 
-    const allowedExtensions = ['jpg', 'jpeg', 'png', 'gif'];
+    const allowedExtensions = ['jpg', 'jpeg', 'png', 'webp'];
     const fileExtension = file?.name.split('.').pop()?.toLowerCase();
 
     if (!fileExtension || !allowedExtensions.includes(fileExtension)) {
@@ -264,7 +257,7 @@ const handleBannerUpload = (event: Event) => {
     const input = event.target as HTMLInputElement;
     const file = input.files?.[0];
 
-    const allowedExtensions = ['jpg', 'jpeg', 'png', 'gif'];
+    const allowedExtensions = ['jpg', 'jpeg', 'png', 'webp'];
     const fileExtension = file?.name.split('.').pop()?.toLowerCase();
 
     if (!fileExtension || !allowedExtensions.includes(fileExtension)) {
