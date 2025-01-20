@@ -1,7 +1,7 @@
 export enum Visibility {
     PUBLIC = "Public",
-    PRIVATE = "Private",
-    FRIENDS = "Friends"
+    FOLLOWERS = "Followers",
+    PRIVATE = "Private"
 }
 
 export interface IPost {

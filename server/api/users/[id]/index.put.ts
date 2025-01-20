@@ -7,11 +7,12 @@ export default defineEventHandler(async e => {
     try {
         const payload = await readBody(e);
 
-        const { name, username, email, password } = await object({
-            name: string().required().max(100).ensure().trim(),
+        const { username, name, email, password, bio } = await object({
+            name: string().max(100).required().ensure().trim(),
             username: string().required().ensure().trim().matches(/^[a-zA-Z0-9.]+$/gi, "Username not valid!").max(25),
             email: string().email().required().ensure().trim(),
             password: string().min(8).required().ensure().trim(),
+            bio: string().required().max(300).ensure().trim()
         }).validate(payload, {abortEarly: false});
     
         const exists = await User.exists({ $or: [{ email }, { username }] });
@@ -22,13 +23,19 @@ export default defineEventHandler(async e => {
                 message: "Email or Username already exists"
             });
         }
-    
-        const hashedPassword = bcrypt.hashSync(password, 12);
 
-        const user = await User.create({ email, username, password: hashedPassword, name, login_type: 'password' });
+        let hashedPassword;
+
+        if (password) {
+            hashedPassword = bcrypt.hashSync(password, 12);
+        }
+
+        const user = await User.findByIdAndUpdate(e.context.auth.id, { email, username, password: hashedPassword, name, bio }, {
+            new: true
+        });
     
         return {
-            message: "User created successfully",
+            data: user
         }
     } catch (err : any) {
         if (err instanceof ValidationError) {

@@ -91,7 +91,7 @@ const { defineField, errors, handleSubmit, isValidating, isSubmitting, setErrors
     password: string
 }>({
     validationSchema: toTypedSchema(object({
-        name: string().required().ensure().trim(),
+        name: string().required().max(100).ensure().trim(),
         username: string().required().ensure().trim().matches(/^[a-zA-Z0-9.]+$/gi, "Username not valid!").max(25),
         email: string().email().required().ensure().trim(),
         password: string().min(8).required().ensure().trim()

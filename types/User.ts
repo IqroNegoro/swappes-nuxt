@@ -7,7 +7,14 @@ export interface IUser {
     bio: string
     banner: string
     avatar: string
+    followers: string[]
+    following: string[]
+    followersCount: number
+    followingCount: number
+    isFollowing: boolean
     login_type: 'google' | 'password'
+    createdAt: Date
+    updatedAt: Date
 }
 
 export interface IToken {

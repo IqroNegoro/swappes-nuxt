@@ -30,7 +30,7 @@
                   <DropdownMenuTrigger as-child>
                     <Button class="w-max p-0 h-auto hover:bg-transparent">
                       <i class="bx"
-                        :class="{ 'bx-world': post.visibility === Visibility.PUBLIC, 'bx-group': post.visibility === Visibility.FRIENDS, 'bx-lock': post.visibility === Visibility.PRIVATE }"></i>
+                        :class="{ 'bx-world': post.visibility === Visibility.PUBLIC, 'bx-group': post.visibility === Visibility.FOLLOWERS, 'bx-lock': post.visibility === Visibility.PRIVATE }"></i>
                       <p>{{ visibility }}</p>
                     </Button>
                   </DropdownMenuTrigger>
@@ -43,8 +43,8 @@
                           <i class="bx bx-world text-xl"></i>
                         </DropdownMenuShortcut>
                       </DropdownMenuItem>
-                      <DropdownMenuItem @click="visibility = Visibility.FRIENDS">
-                        <span>Friend Only</span>
+                      <DropdownMenuItem @click="visibility = Visibility.FOLLOWERS">
+                        <span>Followers Only</span>
                         <DropdownMenuShortcut>
                           <i class="bx bx-group text-xl"></i>
                         </DropdownMenuShortcut>
@@ -83,7 +83,7 @@
                   <p>{{ post.share.user.name }}</p>
                   <div class="flex gap-1 items-center">
                     <i class="bx text-xs"
-                      :class="{ 'bx-world': post.share.visibility === Visibility.PUBLIC, 'bx-group': post.share.visibility === Visibility.FRIENDS, 'bx-lock': post.share.visibility === Visibility.PRIVATE }"></i>
+                      :class="{ 'bx-world': post.share.visibility === Visibility.PUBLIC, 'bx-group': post.share.visibility === Visibility.FOLLOWERS, 'bx-lock': post.share.visibility === Visibility.PRIVATE }"></i>
                     &bull;
                     <i class="bx bx-time-five text-xs"></i>
                     <p class="text-xs">{{ moment(post.createdAt).fromNow() }}</p>

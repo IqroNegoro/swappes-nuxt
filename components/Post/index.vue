@@ -17,7 +17,7 @@
           </NuxtLink>
           <div class="flex gap-1 items-center">
             <i class="bx text-xs"
-              :class="{ 'bx-world': post.visibility === Visibility.PUBLIC, 'bx-group': post.visibility === Visibility.FRIENDS, 'bx-lock': post.visibility === Visibility.PRIVATE }"></i>
+              :class="{ 'bx-world': post.visibility === Visibility.PUBLIC, 'bx-group': post.visibility === Visibility.FOLLOWERS, 'bx-lock': post.visibility === Visibility.PRIVATE }"></i>
             &bull;
             <i class="bx bx-time-five text-xs"></i>
             <p class="text-xs">{{ moment(post.createdAt).fromNow() }}</p>

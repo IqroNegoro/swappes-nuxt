@@ -9,9 +9,11 @@
           <i class="bx bx-x text-white text-2xl"></i>
         </NuxtLink>
       </div>
-      <div class="w-full flex flex-col gap-2 max-h-dvh pt-4" :class="{'lg:max-w-[28rem] lg:w-[28rem] lg:min-w-[28rem]': post?.image}">
-        <NuxtLink v-if="!post?.image" :to="{ name: 'index' }" class="w-max cursor-pointer px-1 rounded-full flex gap-2 items-center">
-          <div class="bg-primary flex justify-center items-center px-1 rounded-full"> 
+      <div class="w-full flex flex-col gap-2 max-h-dvh pt-4"
+        :class="{ 'lg:max-w-[28rem] lg:w-[28rem] lg:min-w-[28rem]': post?.image }">
+        <NuxtLink v-if="!post?.image" :to="{ name: 'index' }"
+          class="w-max cursor-pointer px-1 rounded-full flex gap-2 items-center">
+          <div class="bg-primary flex justify-center items-center px-1 rounded-full">
             <i class="bx bx-left-arrow-alt text-white text-2xl"></i>
           </div>
           Back
@@ -33,7 +35,7 @@
               </NuxtLink>
               <div class="flex gap-1 items-center">
                 <i class="bx text-xs"
-                  :class="{ 'bx-world': post!.visibility === Visibility.PUBLIC, 'bx-group': post!.visibility === Visibility.FRIENDS, 'bx-lock': post!.visibility === Visibility.PRIVATE }"></i>
+                  :class="{ 'bx-world': post!.visibility === Visibility.PUBLIC, 'bx-group': post!.visibility === Visibility.FOLLOWERS, 'bx-lock': post!.visibility === Visibility.PRIVATE }"></i>
                 &bull;
                 <i class="bx bx-time-five text-xs"></i>
                 <p class="text-xs">{{ moment(post!.createdAt).fromNow() }}</p>
@@ -117,8 +119,8 @@
             <Error v-else-if="errorStatus" :refresh="execute" />
             <template v-else>
               <PostComment v-for="comment in comments" :key="comment.id" :comment="comment"
-              @delete-comment="handleDeleteComment" @like-comment="handleLikeComment"
-              @reply-comment="comment => reply = comment" :isPage="true" />
+                @delete-comment="handleDeleteComment" @like-comment="handleLikeComment"
+                @reply-comment="comment => reply = comment" :isPage="true" />
             </template>
           </ClientOnly>
         </div>
